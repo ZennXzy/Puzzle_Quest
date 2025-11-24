@@ -52,7 +52,7 @@ class _PlayScreenState extends State<PlayScreen> {
         final userProgress = UserProgress.fromJson(progressData);
         setState(() {
           _userProgress = userProgress;
-          currentLevel = userProgress.currentLevel;
+          currentLevel = _getNextUnsolvedLevel();
         });
       } else {
         // Initialize with default progress
@@ -85,7 +85,7 @@ class _PlayScreenState extends State<PlayScreen> {
                   userProgress.completedLevels.length > (_userProgress?.completedLevels.length ?? 0)) {
                 setState(() {
                   _userProgress = userProgress;
-                  currentLevel = userProgress.currentLevel;
+                  currentLevel = _getNextUnsolvedLevel();
                 });
                 // Save the updated progress locally
                 await prefs.setString('user_progress_$currentUser', jsonEncode(userProgress.toJson()));
@@ -151,6 +151,20 @@ class _PlayScreenState extends State<PlayScreen> {
     return 'assets/sdg_images/sdg#$currentLevel.jpg';
   }
 
+  int _getNextUnsolvedLevel() {
+    if (_userProgress == null) return currentLevel;
+
+    // Find the next level that hasn't been completed
+    for (int level = 1; level <= 17; level++) { // Assuming 17 SDG images
+      if (!_userProgress!.isLevelCompleted(level)) {
+        return level;
+      }
+    }
+
+    // If all levels are completed, return the current level (or wrap around)
+    return currentLevel;
+  }
+
   void _onPuzzleComplete(bool completed) async {
     print('Puzzle complete callback: completed=$completed, _userProgress=${_userProgress != null}, _currentUser=${_currentUser != null}');
     if (completed) {
@@ -173,6 +187,8 @@ class _PlayScreenState extends State<PlayScreen> {
   }
 
   Future<void> _saveProgress() async {
+    print('Starting _saveProgress for level $currentLevel');
+
     // If user progress is not loaded yet, wait for it
     if (_userProgress == null || _currentUser == null) {
       print('Waiting for user progress to load...');
@@ -194,17 +210,39 @@ class _PlayScreenState extends State<PlayScreen> {
       currentLevel: currentLevel + 1,
       completedLevels: List.from(_userProgress!.completedLevels)..add(currentLevel),
       bestTimes: Map.from(_userProgress!.bestTimes)
-        ..[currentLevel] = _userProgress!.bestTimes[currentLevel] == 0
+        ..[currentLevel] = _userProgress!.bestTimes[currentLevel] == null || _userProgress!.bestTimes[currentLevel] == 0
             ? timeElapsed
             : (timeElapsed < _userProgress!.bestTimes[currentLevel]!
                 ? timeElapsed
                 : _userProgress!.bestTimes[currentLevel]!),
     );
 
+    print('Updated progress: currentLevel=${updatedProgress.currentLevel}, completedLevels=${updatedProgress.completedLevels}');
+
     // Save to local storage first
     final prefs = await SharedPreferences.getInstance();
     final currentUser = prefs.getString('current_user') ?? _currentUser ?? '';
-    await prefs.setString('user_progress_$currentUser', jsonEncode(updatedProgress.toJson()));
+    final progressKey = 'user_progress_$currentUser';
+    final success = await prefs.setString(progressKey, jsonEncode(updatedProgress.toJson()));
+
+    if (success) {
+      print('Local save successful for key: $progressKey');
+    } else {
+      print('Local save failed for key: $progressKey');
+    }
+
+    // Verify the save by reading it back
+    final savedData = prefs.getString(progressKey);
+    if (savedData != null) {
+      try {
+        final verifiedProgress = UserProgress.fromJson(jsonDecode(savedData));
+        print('Local save verification successful: currentLevel=${verifiedProgress.currentLevel}');
+      } catch (e) {
+        print('Local save verification failed: $e');
+      }
+    } else {
+      print('Local save verification failed: data is null');
+    }
 
     // Also try to save to backend
     final currentUserId = prefs.getInt('current_user_id');
@@ -220,20 +258,28 @@ class _PlayScreenState extends State<PlayScreen> {
           }),
         );
 
-        // Backend save is attempted but local save is guaranteed
         if (response.statusCode == 200) {
-          print('Progress saved to backend successfully');
+          final responseData = jsonDecode(response.body);
+          if (responseData['success'] == true) {
+            print('Progress saved to backend successfully');
+          } else {
+            print('Backend save failed: ${responseData['error'] ?? 'Unknown error'}');
+          }
         } else {
-          print('Backend save failed with status: ${response.statusCode}');
+          print('Backend save failed with status: ${response.statusCode}, body: ${response.body}');
         }
       } catch (e) {
         print('Backend save error: $e');
       }
+    } else {
+      print('No user_id found, skipping backend save');
     }
 
     setState(() {
       _userProgress = updatedProgress;
     });
+
+    print('_saveProgress completed');
   }
 
   void _onNextLevel() {

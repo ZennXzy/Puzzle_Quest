@@ -47,7 +47,7 @@ class PuzzleState {
 class UserProgress {
   final String email;
   final int currentLevel;
-  final List<int> completedLevels; // List of completed level numbers
+  final List<String> completedImageIds; // List of completed image IDs
   final Map<int, PuzzleState> savedStates; // Level -> PuzzleState
   final Map<int, int> bestTimes; // Level -> Best completion time in seconds
 
