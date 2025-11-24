@@ -59,7 +59,7 @@ class _PlayScreenState extends State<PlayScreen> {
         final defaultProgress = UserProgress(
           email: currentUser,
           currentLevel: 1,
-          completedLevels: [],
+          completedImageIds: [],
           savedStates: {},
           bestTimes: {},
         );
@@ -82,7 +82,7 @@ class _PlayScreenState extends State<PlayScreen> {
               final userProgress = UserProgress.fromJson(progressData);
               // Update local progress with backend data if it's more advanced
               if (userProgress.currentLevel > (_userProgress?.currentLevel ?? 0) ||
-                  userProgress.completedLevels.length > (_userProgress?.completedLevels.length ?? 0)) {
+                  userProgress.completedImageIds.length > (_userProgress?.completedImageIds.length ?? 0)) {
                 setState(() {
                   _userProgress = userProgress;
                   currentLevel = userProgress.currentLevel;
@@ -137,15 +137,7 @@ class _PlayScreenState extends State<PlayScreen> {
     );
   }
 
-  void _nextLevel() {
-    setState(() {
-      currentLevel++;
-      timeElapsed = 0;
-      _timer?.cancel();
-      _startTimer();
-      puzzleKey = UniqueKey();
-    });
-  }
+
 
   String _getImagePath() {
     return 'assets/sdg_images/sdg#$currentLevel.jpg';
@@ -182,7 +174,7 @@ class _PlayScreenState extends State<PlayScreen> {
         _userProgress = UserProgress(
           email: _currentUser ?? 'guest',
           currentLevel: 1,
-          completedLevels: [],
+          completedImageIds: [],
           savedStates: {},
           bestTimes: {},
         );
@@ -192,13 +184,13 @@ class _PlayScreenState extends State<PlayScreen> {
     // Update user progress
     final updatedProgress = _userProgress!.copyWith(
       currentLevel: currentLevel + 1,
-      completedLevels: List.from(_userProgress!.completedLevels)..add(currentLevel),
+      completedImageIds: List.from(_userProgress!.completedImageIds)..add(_getImagePath()),
       bestTimes: Map.from(_userProgress!.bestTimes)
-        ..[currentLevel] = _userProgress!.bestTimes[currentLevel] == 0
+        ..[currentLevel] = (_userProgress!.bestTimes[currentLevel] ?? 0) == 0
             ? timeElapsed
-            : (timeElapsed < _userProgress!.bestTimes[currentLevel]!
+            : (timeElapsed < (_userProgress!.bestTimes[currentLevel] ?? 0)
                 ? timeElapsed
-                : _userProgress!.bestTimes[currentLevel]!),
+                : (_userProgress!.bestTimes[currentLevel] ?? 0)),
     );
 
     // Save to local storage first

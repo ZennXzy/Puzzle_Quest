@@ -1,8 +1,5 @@
-- [x] Implement _loadUserProgress method in PlayScreen to load user progress from SharedPreferences
-- [x] Fix puzzle completion issue where empty piece correctPosition was incorrect during shuffling
-- [x] Add user_progress table to backend/init.sql
-- [x] Create backend/save_progress.php for saving progress
-- [x] Create backend/load_progress.php for loading progress
-- [x] Update lib/screens/play_screen.dart to use backend for save/load
-- [x] Update lib/screens/login_screen.dart to load progress on login
-- [x] Test save/load functionality across app restarts
+- [ ] Update all `completedLevels` to `completedImageIds` and add image IDs instead of level numbers.
+- [ ] Change `isLevelCompleted(level)` to `isImageCompleted('sdg#$level.jpg')`.
+- [ ] Remove `currentLevel++` from `_onNextLevel` since it's already incremented in `_saveProgress`.
+- [ ] Remove the logger line with undefined `request`.
+- [ ] Update print statements to use correct field names.

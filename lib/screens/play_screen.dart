@@ -59,7 +59,7 @@ class _PlayScreenState extends State<PlayScreen> {
         final defaultProgress = UserProgress(
           email: currentUser,
           currentLevel: 1,
-          completedLevels: [],
+          completedImageIds: [],
           savedStates: {},
           bestTimes: {},
         );
@@ -82,7 +82,7 @@ class _PlayScreenState extends State<PlayScreen> {
               final userProgress = UserProgress.fromJson(progressData);
               // Update local progress with backend data if it's more advanced
               if (userProgress.currentLevel > (_userProgress?.currentLevel ?? 0) ||
-                  userProgress.completedLevels.length > (_userProgress?.completedLevels.length ?? 0)) {
+                  userProgress.completedImageIds.length > (_userProgress?.completedImageIds.length ?? 0)) {
                 setState(() {
                   _userProgress = userProgress;
                   currentLevel = _getNextUnsolvedLevel();
@@ -148,7 +148,22 @@ class _PlayScreenState extends State<PlayScreen> {
   }
 
   String _getImagePath() {
-    return 'assets/sdg_images/sdg#$currentLevel.jpg';
+    return 'assets/sdg_images/' + _getNextUnsolvedImageId();
+  }
+
+  String _getNextUnsolvedImageId() {
+    if (_userProgress == null) return 'sdg#$currentLevel.jpg';
+
+    // Find the next image that hasn't been completed
+    for (int level = 1; level <= 17; level++) { // Assuming 17 SDG images
+      final imageId = 'sdg#$level.jpg';
+      if (!_userProgress!.isImageCompleted(imageId)) {
+        return imageId;
+      }
+    }
+
+    // If all images are completed, return the current image (or wrap around)
+    return 'sdg#$currentLevel.jpg';
   }
 
   int _getNextUnsolvedLevel() {
@@ -198,17 +213,20 @@ class _PlayScreenState extends State<PlayScreen> {
         _userProgress = UserProgress(
           email: _currentUser ?? 'guest',
           currentLevel: 1,
-          completedLevels: [],
+          completedImageIds: [],
           savedStates: {},
           bestTimes: {},
         );
       }
     }
 
+    // Get the current image ID that was just completed
+    final currentImageId = _getNextUnsolvedImageId();
+
     // Update user progress
     final updatedProgress = _userProgress!.copyWith(
       currentLevel: currentLevel + 1,
-      completedLevels: List.from(_userProgress!.completedLevels)..add(currentLevel),
+      completedImageIds: List.from(_userProgress!.completedImageIds)..add(currentImageId),
       bestTimes: Map.from(_userProgress!.bestTimes)
         ..[currentLevel] = _userProgress!.bestTimes[currentLevel] == null || _userProgress!.bestTimes[currentLevel] == 0
             ? timeElapsed
@@ -217,7 +235,7 @@ class _PlayScreenState extends State<PlayScreen> {
                 : _userProgress!.bestTimes[currentLevel]!),
     );
 
-    print('Updated progress: currentLevel=${updatedProgress.currentLevel}, completedLevels=${updatedProgress.completedLevels}');
+    print('Updated progress: currentLevel=${updatedProgress.currentLevel}, completedImageIds=${updatedProgress.completedImageIds}');
 
     // Save to local storage first
     final prefs = await SharedPreferences.getInstance();
@@ -285,7 +303,6 @@ class _PlayScreenState extends State<PlayScreen> {
   void _onNextLevel() {
     setState(() {
       _showCompletionOverlay = false;
-      currentLevel++;
       timeElapsed = 0;
       _timer?.cancel();
       _startTimer();

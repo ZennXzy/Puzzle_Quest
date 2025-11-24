@@ -37,7 +37,7 @@ if ($progress) {
         'progress' => [
             'email' => '',
             'currentLevel' => 1,
-            'completedLevels' => [],
+            'completedImageIds' => [],
             'savedStates' => [],
             'bestTimes' => [],
         ]
