@@ -5,4 +5,4 @@
 - [x] Create backend/load_progress.php for loading progress
 - [x] Update lib/screens/play_screen.dart to use backend for save/load
 - [x] Update lib/screens/login_screen.dart to load progress on login
-- [ ] Test save/load functionality across app restarts
+- [x] Test save/load functionality across app restarts
