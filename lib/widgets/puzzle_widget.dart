@@ -60,8 +60,8 @@ class _PuzzleWidgetState extends State<PuzzleWidget> {
     pieces.clear();
 
     // Create 3x3 puzzle pieces from a 4x4 dimension photo
-    // We'll use pieces from positions: 0,1,2,4,5,6,8,9,10 (skipping 3,7,11,12,13,14,15)
-    final selectedPieceIds = [0, 1, 2, 4, 5, 6, 8, 9, 10];
+    // We'll use pieces from positions: 0,1,2,4,5,6,8,9 (skipping 3,7,10,11,12,13,14,15)
+    final selectedPieceIds = [0, 1, 2, 4, 5, 6, 8, 9];
 
     // Create pieces in correct order first
     for (int i = 0; i < selectedPieceIds.length; i++) {
@@ -74,11 +74,11 @@ class _PuzzleWidgetState extends State<PuzzleWidget> {
       ));
     }
 
-    // Add empty piece at the last position (position 8) - this is the 3x3 slot that gets removed
+    // Add empty piece at the last position - this is the slot that gets removed
     pieces.add(PuzzlePiece(
       id: -1,
-      correctPosition: 8,
-      currentPosition: 8,
+      correctPosition: pieces.length - 1,
+      currentPosition: pieces.length - 1,
       imagePath: '',
       isEmpty: true,
     ));
@@ -137,7 +137,7 @@ class _PuzzleWidgetState extends State<PuzzleWidget> {
     pieces[emptyIndex] = tappedPiece.copyWith(currentPosition: emptyIndex);
     pieces[pieceIndex] = PuzzlePiece(
       id: -1,
-      correctPosition: 8,
+      correctPosition: pieces.length - 1,
       currentPosition: pieceIndex,
       imagePath: '',
       isEmpty: true,
@@ -155,7 +155,7 @@ class _PuzzleWidgetState extends State<PuzzleWidget> {
         pieces[emptyIndex] = tappedPiece.copyWith(currentPosition: emptyIndex);
         pieces[index] = PuzzlePiece(
           id: -1,
-          correctPosition: 8,
+          correctPosition: pieces.length - 1,
           currentPosition: index,
           imagePath: '',
           isEmpty: true,
@@ -182,7 +182,7 @@ class _PuzzleWidgetState extends State<PuzzleWidget> {
 
   bool _isPuzzleComplete() {
     for (final piece in pieces) {
-      if (!piece.isEmpty && piece.currentPosition != piece.correctPosition) {
+      if (piece.currentPosition != piece.correctPosition) {
         return false;
       }
     }

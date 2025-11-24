@@ -14,5 +14,18 @@ CREATE TABLE IF NOT EXISTS `users` (
   UNIQUE KEY `idx_users_email` (`email`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+CREATE TABLE IF NOT EXISTS `user_progress` (
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `user_id` INT UNSIGNED NOT NULL,
+  `current_level` INT NOT NULL DEFAULT 1,
+  `completed_levels` JSON NOT NULL DEFAULT ('[]'),
+  `saved_states` JSON NOT NULL DEFAULT ('{}'),
+  `best_times` JSON NOT NULL DEFAULT ('{}'),
+  `updated_at` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `idx_user_progress_user_id` (`user_id`),
+  FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 -- Example insert (use only for testing):
 -- INSERT INTO users (name, email, password_hash) VALUES ('Test User', 'test@example.com', '<hash>');

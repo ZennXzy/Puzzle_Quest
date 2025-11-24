@@ -3,6 +3,7 @@ import 'dart:ui';
 
 import 'package:crypto/crypto.dart';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:puzzle_quest/screens/registration_screen.dart';
 import 'package:puzzle_quest/screens/home_screen.dart';
@@ -29,36 +30,30 @@ class _LoginScreenState extends State<LoginScreen> {
     final password = passwordController.text;
 
     try {
-      final prefs = await SharedPreferences.getInstance();
-      final usersJson = prefs.getString('local_users') ?? '[]';
-      final List<dynamic> users = jsonDecode(usersJson);
-
-      final match = users.cast<Map<String, dynamic>>().firstWhere(
-        (u) => (u['email'] as String).toLowerCase() == email,
-        orElse: () => {},
+      const baseUrl = 'http://10.0.2.2:8000'; // For Android emulator, use 10.0.2.2 for localhost
+      final response = await http.post(
+        Uri.parse('$baseUrl/backend/login.php'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'email': email, 'password': password}),
       );
 
-      if (match.isEmpty) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('No account found for this email')));
+      final responseData = jsonDecode(response.body);
+
+      if (response.statusCode == 200 && responseData['success'] == true) {
+        final user = responseData['user'];
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('current_user', user['email']);
+        await prefs.setInt('current_user_id', user['id']);
+        await prefs.setString('current_user_name', user['name'] ?? '');
+
+        // Optionally store remembered email
+        if (remember) {
+          await prefs.setString('remember_email', email);
+        }
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(responseData['error'] ?? 'Login failed')));
         return;
       }
-
-      final salt = match['salt'] as String? ?? '';
-      final storedHash = match['password_hash'] as String? ?? '';
-      final inputHash = sha256.convert(utf8.encode(salt + password)).toString();
-
-      if (inputHash != storedHash) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Incorrect password')));
-        return;
-      }
-
-      // Optionally store remembered email
-      if (remember) {
-        await prefs.setString('remember_email', email);
-      }
-
-      // mark current user as logged in
-      await prefs.setString('current_user', match['name'] as String);
 
       // Show a modal loading indicator for 3 seconds before entering Home
       if (mounted) {
