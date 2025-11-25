@@ -131,7 +131,7 @@ class _PlayScreenState extends State<PlayScreen> {
                 gridSize: 3,
               ),
               const SizedBox(height: 16),
-              const Text('This is the help dialog for the puzzle game.'),
+              const Text('Slide the puzzle pieces to arrange them in the correct order and complete the image.'),
             ],
           ),
           actions: [
