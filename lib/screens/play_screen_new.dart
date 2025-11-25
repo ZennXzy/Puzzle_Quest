@@ -311,43 +311,21 @@ class _PlayScreenState extends State<PlayScreen> {
                             ),
                           ),
 
-                          // Reset and Help buttons (right)
-                          Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              // Reset button
-                              Material(
-                                color: Colors.transparent,
-                                child: InkWell(
-                                  borderRadius: BorderRadius.circular(12),
-                                  onTap: _resetLevel,
-                                  child: Container(
-                                    padding: const EdgeInsets.all(8),
-                                    child: Icon(
-                                      Icons.refresh,
-                                      color: Colors.white.withOpacity(0.95),
-                                      size: 28,
-                                    ),
-                                  ),
+                          // Reset button (right)
+                          Material(
+                            color: Colors.transparent,
+                            child: InkWell(
+                              borderRadius: BorderRadius.circular(12),
+                              onTap: _resetLevel,
+                              child: Container(
+                                padding: const EdgeInsets.all(8),
+                                child: Icon(
+                                  Icons.refresh,
+                                  color: Colors.white.withOpacity(0.95),
+                                  size: 28,
                                 ),
                               ),
-                              // Help button
-                              Material(
-                                color: Colors.transparent,
-                                child: InkWell(
-                                  borderRadius: BorderRadius.circular(12),
-                                  onTap: _showHelp,
-                                  child: Container(
-                                    padding: const EdgeInsets.all(8),
-                                    child: Icon(
-                                      Icons.help_outline,
-                                      color: Colors.white.withOpacity(0.95),
-                                      size: 28,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ],
+                            ),
                           ),
                         ],
                       ),
@@ -358,6 +336,7 @@ class _PlayScreenState extends State<PlayScreen> {
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16.0),
                     child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         // Timer (left)
                         Text(
@@ -367,6 +346,22 @@ class _PlayScreenState extends State<PlayScreen> {
                             color: Colors.white.withOpacity(0.95),
                             fontSize: 24,
                             fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        // Help button (right)
+                        Material(
+                          color: Colors.transparent,
+                          child: InkWell(
+                            borderRadius: BorderRadius.circular(12),
+                            onTap: _showHelp,
+                            child: Container(
+                              padding: const EdgeInsets.all(8),
+                              child: Icon(
+                                Icons.help_outline,
+                                color: Colors.white.withOpacity(0.95),
+                                size: 28,
+                              ),
+                            ),
                           ),
                         ),
                       ],
