@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import '../widgets/puzzle_widget.dart';
+import '../widgets/puzzle_preview_widget.dart';
 import '../widgets/level_completion_overlay.dart';
 import '../models/user_progress.dart';
 
@@ -122,7 +123,17 @@ class _PlayScreenState extends State<PlayScreen> {
       builder: (BuildContext context) {
         return AlertDialog(
           title: const Text('Help'),
-          content: const Text('This is the help dialog for the puzzle game.'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              PuzzlePreviewWidget(
+                imagePath: _getImagePath(),
+                gridSize: 3,
+              ),
+              const SizedBox(height: 16),
+              const Text('This is the help dialog for the puzzle game.'),
+            ],
+          ),
           actions: [
             TextButton(
               onPressed: () {
