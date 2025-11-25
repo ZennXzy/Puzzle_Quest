@@ -144,22 +144,14 @@ class _PuzzleWidgetState extends State<PuzzleWidget> {
     );
   }
 
-  void _onPieceTap(int index) {
+  void _onPieceSwipe(int index, DragEndDetails details) {
     final emptyIndex = pieces.indexWhere((piece) => piece.isEmpty);
-    final tappedPiece = pieces[index];
 
-    // Check if the tapped piece can move (adjacent to empty space)
-    if (_canMove(index, emptyIndex)) {
+    // Check if the swipe direction is towards the empty space
+    if (_isSwipeTowardsEmpty(index, emptyIndex, details)) {
       setState(() {
-        // Swap positions
-        pieces[emptyIndex] = tappedPiece.copyWith(currentPosition: emptyIndex);
-        pieces[index] = PuzzlePiece(
-          id: -1,
-          correctPosition: pieces.length - 1,
-          currentPosition: index,
-          imagePath: '',
-          isEmpty: true,
-        );
+        // Perform the move
+        _performMove(index);
 
         // Check if puzzle is complete
         if (_isPuzzleComplete()) {
@@ -169,16 +161,41 @@ class _PuzzleWidgetState extends State<PuzzleWidget> {
     }
   }
 
-  bool _canMove(int pieceIndex, int emptyIndex) {
+  bool _isSwipeTowardsEmpty(int pieceIndex, int emptyIndex, DragEndDetails details) {
     final pieceRow = pieceIndex ~/ 3;
     final pieceCol = pieceIndex % 3;
     final emptyRow = emptyIndex ~/ 3;
     final emptyCol = emptyIndex % 3;
 
-    // Check if adjacent (up, down, left, right)
-    return (pieceRow == emptyRow && (pieceCol - emptyCol).abs() == 1) ||
-           (pieceCol == emptyCol && (pieceRow - emptyRow).abs() == 1);
+    // Determine swipe direction based on velocity
+    final dx = details.velocity.pixelsPerSecond.dx;
+    final dy = details.velocity.pixelsPerSecond.dy;
+
+    // Horizontal swipe
+    if (dx.abs() > dy.abs()) {
+      if (dx > 0 && emptyCol > pieceCol && emptyRow == pieceRow) {
+        // Swipe right towards empty space
+        return true;
+      } else if (dx < 0 && emptyCol < pieceCol && emptyRow == pieceRow) {
+        // Swipe left towards empty space
+        return true;
+      }
+    }
+    // Vertical swipe
+    else {
+      if (dy > 0 && emptyRow > pieceRow && emptyCol == pieceCol) {
+        // Swipe down towards empty space
+        return true;
+      } else if (dy < 0 && emptyRow < pieceRow && emptyCol == pieceCol) {
+        // Swipe up towards empty space
+        return true;
+      }
+    }
+
+    return false;
   }
+
+
 
   bool _isPuzzleComplete() {
     for (final piece in pieces) {
@@ -245,6 +262,7 @@ class _PuzzleWidgetState extends State<PuzzleWidget> {
           ),
           padding: const EdgeInsets.all(8),
           child: GridView.builder(
+            physics: NeverScrollableScrollPhysics(),
             gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: widget.gridSize,
               crossAxisSpacing: 3,
@@ -275,7 +293,7 @@ class _PuzzleWidgetState extends State<PuzzleWidget> {
               }
 
               return GestureDetector(
-                onTap: () => _onPieceTap(index),
+                onPanEnd: (details) => _onPieceSwipe(index, details),
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 150),
                   curve: Curves.easeInOut,
