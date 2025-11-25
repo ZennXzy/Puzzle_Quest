@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'dart:ui' as ui;
 import 'dart:async';
 import 'dart:math';
+import 'package:audioplayers/audioplayers.dart';
 import '../models/puzzle_piece.dart';
 
 class PuzzleWidget extends StatefulWidget {
@@ -24,11 +25,24 @@ class _PuzzleWidgetState extends State<PuzzleWidget> {
   List<PuzzlePiece> pieces = [];
   ui.Image? fullImage;
   bool isLoading = true;
+  late AudioPlayer _audioPlayer;
+  final List<String> _slideSounds = [
+    'audio/slideAudio#1.mp3',
+    'audio/slideAudio#2.mp3',
+    'audio/slideAudio#3.mp3',
+  ];
 
   @override
   void initState() {
     super.initState();
+    _audioPlayer = AudioPlayer();
     _loadImage();
+  }
+
+  @override
+  void dispose() {
+    _audioPlayer.dispose();
+    super.dispose();
   }
 
   Future<void> _loadImage() async {
@@ -149,6 +163,9 @@ class _PuzzleWidgetState extends State<PuzzleWidget> {
 
     // Check if the swipe direction is towards the empty space
     if (_isSwipeTowardsEmpty(index, emptyIndex, details)) {
+      // Play slide sound effect
+      _playSlideSound();
+
       setState(() {
         // Perform the move
         _performMove(index);
@@ -159,6 +176,12 @@ class _PuzzleWidgetState extends State<PuzzleWidget> {
         }
       });
     }
+  }
+
+  void _playSlideSound() {
+    final random = Random();
+    final randomSound = _slideSounds[random.nextInt(_slideSounds.length)];
+    _audioPlayer.play(AssetSource(randomSound));
   }
 
   bool _isSwipeTowardsEmpty(int pieceIndex, int emptyIndex, DragEndDetails details) {
