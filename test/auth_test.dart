@@ -183,7 +183,13 @@ void main() {
       await prefs.setString('local_users', jsonEncode([user]));
 
       // Simulate app restart by creating new prefs instance
-      SharedPreferences.setMockInitialValues(prefs.getAll());
+      final keys = prefs.getKeys();
+      final values = <String, Object>{};
+      for (final key in keys) {
+        final value = prefs.get(key);
+        if (value != null) values[key] = value;
+      }
+      SharedPreferences.setMockInitialValues(values);
       final newPrefs = await SharedPreferences.getInstance();
 
       final savedUsersJson = newPrefs.getString('local_users');
