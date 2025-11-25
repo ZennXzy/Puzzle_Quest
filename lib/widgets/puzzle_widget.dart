@@ -161,8 +161,8 @@ class _PuzzleWidgetState extends State<PuzzleWidget> {
   void _onPieceSwipe(int index, DragEndDetails details) {
     final emptyIndex = pieces.indexWhere((piece) => piece.isEmpty);
 
-    // Check if the swipe direction is towards the empty space
-    if (_isSwipeTowardsEmpty(index, emptyIndex, details)) {
+    // Check if the swipe direction is towards the empty space AND the piece is adjacent to the empty slot
+    if (_isSwipeTowardsEmpty(index, emptyIndex, details) && _isAdjacentToEmpty(index, emptyIndex)) {
       // Play slide sound effect
       _playSlideSound();
 
@@ -216,6 +216,20 @@ class _PuzzleWidgetState extends State<PuzzleWidget> {
     }
 
     return false;
+  }
+
+  bool _isAdjacentToEmpty(int pieceIndex, int emptyIndex) {
+    final pieceRow = pieceIndex ~/ 3;
+    final pieceCol = pieceIndex % 3;
+    final emptyRow = emptyIndex ~/ 3;
+    final emptyCol = emptyIndex % 3;
+
+    // Check if the piece is directly adjacent to the empty slot (up, down, left, right)
+    final rowDiff = (pieceRow - emptyRow).abs();
+    final colDiff = (pieceCol - emptyCol).abs();
+
+    // Adjacent if exactly one row or one column difference, but not both
+    return (rowDiff == 1 && colDiff == 0) || (rowDiff == 0 && colDiff == 1);
   }
 
 
