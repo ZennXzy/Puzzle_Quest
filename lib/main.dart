@@ -4,7 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'screens/login_screen.dart';
 import 'screens/registration_screen.dart';
 import 'screens/home_screen.dart';
-import 'screens/play_screen.dart';
+import 'screens/play_screen_new.dart';
 import 'screens/account_screen.dart';
 
 void main() => runApp(const MyApp());

@@ -1,8 +1,8 @@
 import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:http/http.dart' as http;
 import '../widgets/puzzle_widget.dart';
 import '../widgets/level_completion_overlay.dart';
 import '../models/user_progress.dart';
@@ -23,6 +23,7 @@ class _PlayScreenState extends State<PlayScreen> {
   Key puzzleKey = UniqueKey();
   bool _showCompletionOverlay = false;
   bool _isSavingProgress = false;
+  bool _isLoadingProgress = true;
 
   @override
   void initState() {
@@ -39,13 +40,35 @@ class _PlayScreenState extends State<PlayScreen> {
 
   Future<void> _loadUserProgress() async {
     final prefs = await SharedPreferences.getInstance();
-    final currentUserId = prefs.getInt('current_user_id');
     final currentUser = prefs.getString('current_user');
 
     if (currentUser != null) {
       _currentUser = currentUser;
 
-      // First try to load from local storage
+      // First try to load from backend
+      try {
+        final response = await http.post(
+          Uri.parse('http://localhost/puzzle_quest/backend/load_progress.php'),
+          body: {'email': currentUser},
+        );
+
+        if (response.statusCode == 200) {
+          final data = jsonDecode(response.body);
+          if (data['success'] == true) {
+            final userProgress = UserProgress.fromJson(data['progress']);
+            setState(() {
+              _userProgress = userProgress;
+              currentLevel = userProgress.currentLevel;
+              _isLoadingProgress = false;
+            });
+            return;
+          }
+        }
+      } catch (e) {
+        print('Error loading from backend: $e');
+      }
+
+      // Fallback to local storage
       final progressJson = prefs.getString('user_progress_$currentUser');
       if (progressJson != null) {
         final progressData = jsonDecode(progressJson) as Map<String, dynamic>;
@@ -53,6 +76,7 @@ class _PlayScreenState extends State<PlayScreen> {
         setState(() {
           _userProgress = userProgress;
           currentLevel = userProgress.currentLevel;
+          _isLoadingProgress = false;
         });
       } else {
         // Initialize with default progress
@@ -60,43 +84,18 @@ class _PlayScreenState extends State<PlayScreen> {
           email: currentUser,
           currentLevel: 1,
           completedImageIds: [],
-          savedStates: {},
           bestTimes: {},
         );
         setState(() {
           _userProgress = defaultProgress;
           currentLevel = 1;
+          _isLoadingProgress = false;
         });
       }
-
-      // Then try to sync with backend if user is logged in
-      if (currentUserId != null) {
-        try {
-          const baseUrl = 'http://10.0.2.2:8000'; // For Android emulator, use 10.0.2.2 for localhost
-          final response = await http.get(Uri.parse('$baseUrl/backend/load_progress.php?user_id=$currentUserId'));
-
-          if (response.statusCode == 200) {
-            final responseData = jsonDecode(response.body);
-            if (responseData['success'] == true) {
-              final progressData = responseData['progress'] as Map<String, dynamic>;
-              final userProgress = UserProgress.fromJson(progressData);
-              // Update local progress with backend data if it's more advanced
-              if (userProgress.currentLevel > (_userProgress?.currentLevel ?? 0) ||
-                  userProgress.completedImageIds.length > (_userProgress?.completedImageIds.length ?? 0)) {
-                setState(() {
-                  _userProgress = userProgress;
-                  currentLevel = userProgress.currentLevel;
-                });
-                // Save the updated progress locally
-                await prefs.setString('user_progress_$currentUser', jsonEncode(userProgress.toJson()));
-              }
-            }
-          }
-        } catch (e) {
-          // Backend sync failed, but local progress is already loaded
-          print('Backend sync failed: $e');
-        }
-      }
+    } else {
+      setState(() {
+        _isLoadingProgress = false;
+      });
     }
   }
 
@@ -110,10 +109,10 @@ class _PlayScreenState extends State<PlayScreen> {
 
   void _resetLevel() {
     setState(() {
-      // Reset functionality - placeholder for now
-      // This will reset the puzzle when implemented
+      timeElapsed = 0;
       _timer?.cancel();
       _startTimer();
+      puzzleKey = UniqueKey();
     });
   }
 
@@ -193,35 +192,10 @@ class _PlayScreenState extends State<PlayScreen> {
                 : (_userProgress!.bestTimes[currentLevel] ?? 0)),
     );
 
-    // Save to local storage first
+    // Save to local storage
     final prefs = await SharedPreferences.getInstance();
     final currentUser = prefs.getString('current_user') ?? _currentUser ?? '';
     await prefs.setString('user_progress_$currentUser', jsonEncode(updatedProgress.toJson()));
-
-    // Also try to save to backend
-    final currentUserId = prefs.getInt('current_user_id');
-    if (currentUserId != null) {
-      try {
-        const baseUrl = 'http://10.0.2.2:8000'; // For Android emulator, use 10.0.2.2 for localhost
-        final response = await http.post(
-          Uri.parse('$baseUrl/backend/save_progress.php'),
-          headers: {'Content-Type': 'application/json'},
-          body: jsonEncode({
-            'user_id': currentUserId,
-            'progress': updatedProgress.toJson(),
-          }),
-        );
-
-        // Backend save is attempted but local save is guaranteed
-        if (response.statusCode == 200) {
-          print('Progress saved to backend successfully');
-        } else {
-          print('Backend save failed with status: ${response.statusCode}');
-        }
-      } catch (e) {
-        print('Backend save error: $e');
-      }
-    }
 
     setState(() {
       _userProgress = updatedProgress;
@@ -248,6 +222,28 @@ class _PlayScreenState extends State<PlayScreen> {
 
   @override
   Widget build(BuildContext context) {
+    if (_isLoadingProgress) {
+      return Scaffold(
+        body: Container(
+          width: double.infinity,
+          height: double.infinity,
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [Color(0xFF0B1633), Color(0xFF6E4AA6), Color(0xFFCEB9E0)],
+              stops: [0.0, 0.5, 1.0],
+            ),
+          ),
+          child: const Center(
+            child: CircularProgressIndicator(
+              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+            ),
+          ),
+        ),
+      );
+    }
+
     return Scaffold(
       body: Stack(
         children: [
