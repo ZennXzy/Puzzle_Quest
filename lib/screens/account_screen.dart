@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 import '../models/user_progress.dart';
+import '../widgets/achievements_widget.dart';
 import 'login_screen.dart';
 
 class AccountScreen extends StatefulWidget {
@@ -133,6 +134,9 @@ class _AccountScreenState extends State<AccountScreen> {
               Center(
                 child: Container(
                   width: width > 520 ? 460 : width * 0.92,
+                  constraints: BoxConstraints(
+                    maxHeight: MediaQuery.of(context).size.height * 0.6,
+                  ),
                   padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 26),
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(22),
@@ -153,141 +157,107 @@ class _AccountScreenState extends State<AccountScreen> {
                       ),
                     ],
                   ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Username
-                      Text(
-                        'Username',
-                        style: TextStyle(
-                          fontFamily: 'Poppins',
-                          color: Colors.white.withOpacity(0.8),
-                          fontSize: 18,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        _username ?? 'Loading...',
-                        style: TextStyle(
-                          fontFamily: 'Poppins',
-                          color: Colors.white.withOpacity(0.95),
-                          fontSize: 24,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-
-                      const SizedBox(height: 24),
-
-                      // Current Level
-                      Text(
-                        'Current Level',
-                        style: TextStyle(
-                          fontFamily: 'Poppins',
-                          color: Colors.white.withOpacity(0.8),
-                          fontSize: 18,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        '${_userProgress?.currentLevel ?? 1}',
-                        style: TextStyle(
-                          fontFamily: 'Poppins',
-                          color: Colors.white.withOpacity(0.95),
-                          fontSize: 24,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-
-                      const SizedBox(height: 24),
-
-                      // Achievements
-                      Text(
-                        'Achievements',
-                        style: TextStyle(
-                          fontFamily: 'Poppins',
-                          color: Colors.white.withOpacity(0.8),
-                          fontSize: 18,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      if (_userProgress?.bestTimes.isNotEmpty ?? false)
-                        ..._userProgress!.bestTimes.entries.map((entry) {
-                          final minutes = entry.value ~/ 60;
-                          final seconds = entry.value % 60;
-                          return Padding(
-                            padding: const EdgeInsets.only(bottom: 8),
-                            child: Text(
-                              'Level ${entry.key}: ${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}',
-                              style: TextStyle(
-                                fontFamily: 'Poppins',
-                                color: Colors.white.withOpacity(0.9),
-                                fontSize: 16,
-                              ),
-                            ),
-                          );
-                        })
-                      else
+                  child: SingleChildScrollView(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Username
                         Text(
-                          'No achievements yet',
+                          'Username',
                           style: TextStyle(
                             fontFamily: 'Poppins',
-                            color: Colors.white.withOpacity(0.7),
-                            fontSize: 16,
+                            color: Colors.white.withOpacity(0.8),
+                            fontSize: 18,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          _username ?? 'Loading...',
+                          style: TextStyle(
+                            fontFamily: 'Poppins',
+                            color: Colors.white.withOpacity(0.95),
+                            fontSize: 24,
+                            fontWeight: FontWeight.w600,
                           ),
                         ),
 
-                      const SizedBox(height: 32),
+                        const SizedBox(height: 24),
 
-                      // Logout button
-                      Container(
-                        height: 52,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(12),
-                          gradient: LinearGradient(
-                            colors: [Colors.red.shade300.withOpacity(0.9), Colors.red.shade200.withOpacity(0.7)],
-                          ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.35),
-                              offset: const Offset(4, 6),
-                              blurRadius: 10,
-                            ),
-                            BoxShadow(
-                              color: Colors.white.withOpacity(0.18),
-                              offset: const Offset(-2, -2),
-                              blurRadius: 6,
-                            ),
-                          ],
-                        ),
-                        child: Material(
-                          color: Colors.transparent,
-                          child: InkWell(
-                            borderRadius: BorderRadius.circular(12),
-                            onTap: _logout,
-                            child: const Center(
-                              child: Text(
-                                'Logout',
-                                style: TextStyle(
-                                  fontFamily: 'Poppins',
-                                  color: Colors.white,
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                            ),
+                        // Current Level
+                        Text(
+                          'Current Level',
+                          style: TextStyle(
+                            fontFamily: 'Poppins',
+                            color: Colors.white.withOpacity(0.8),
+                            fontSize: 18,
+                            fontWeight: FontWeight.w500,
                           ),
                         ),
-                      ),
-                    ],
+                        const SizedBox(height: 8),
+                        Text(
+                          '${_userProgress?.currentLevel ?? 1}',
+                          style: TextStyle(
+                            fontFamily: 'Poppins',
+                            color: Colors.white.withOpacity(0.95),
+                            fontSize: 24,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+
+                        const SizedBox(height: 24),
+
+                        // Achievements Widget
+                        AchievementsWidget(userProgress: _userProgress),
+                      ],
+                    ),
                   ),
                 ),
               ),
 
-              // Flexible space
-              const Expanded(child: SizedBox()),
+              const SizedBox(height: 20),
+
+              // Logout button
+              Container(
+                width: width > 520 ? 460 : width * 0.92,
+                height: 52,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(12),
+                  gradient: LinearGradient(
+                    colors: [Colors.red.shade300.withOpacity(0.9), Colors.red.shade200.withOpacity(0.7)],
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.35),
+                      offset: const Offset(4, 6),
+                      blurRadius: 10,
+                    ),
+                    BoxShadow(
+                      color: Colors.white.withOpacity(0.18),
+                      offset: const Offset(-2, -2),
+                      blurRadius: 6,
+                    ),
+                  ],
+                ),
+                child: Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(12),
+                    onTap: _logout,
+                    child: const Center(
+                      child: Text(
+                        'Logout',
+                        style: TextStyle(
+                          fontFamily: 'Poppins',
+                          color: Colors.white,
+                          fontSize: 20,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
             ],
           ),
         ),

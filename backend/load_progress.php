@@ -28,6 +28,7 @@ if ($progress) {
             'completedLevels' => json_decode($progress['completed_levels'], true),
             'savedStates' => json_decode($progress['saved_states'], true),
             'bestTimes' => json_decode($progress['best_times'], true),
+            'achievements' => json_decode($progress['achievements'], true) ?? [],
         ]
     ]);
 } else {

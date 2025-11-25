@@ -6,6 +6,7 @@ class UserProgress {
   final List<String> completedImageIds; // List of completed image IDs
   final Map<int, PuzzleState> savedStates; // Level -> Saved puzzle state
   final Map<int, int> bestTimes; // Level -> Best completion time in seconds
+  final Map<String, bool> achievements; // Achievement name -> unlocked status
 
   const UserProgress({
     required this.email,
@@ -13,6 +14,7 @@ class UserProgress {
     this.completedImageIds = const [],
     this.savedStates = const {},
     this.bestTimes = const {},
+    this.achievements = const {},
   });
 
   Map<String, dynamic> toJson() {
@@ -36,6 +38,9 @@ class UserProgress {
       bestTimes: (json['bestTimes'] as Map<String, dynamic>? ?? {}).map(
         (k, v) => MapEntry(int.parse(k), v as int),
       ),
+      achievements: (json['achievements'] as Map<String, dynamic>? ?? {}).map(
+        (k, v) => MapEntry(k, v as bool),
+      ),
     );
   }
 
@@ -45,6 +50,7 @@ class UserProgress {
     List<String>? completedImageIds,
     Map<int, PuzzleState>? savedStates,
     Map<int, int>? bestTimes,
+    Map<String, bool>? achievements,
   }) {
     return UserProgress(
       email: email ?? this.email,
@@ -52,6 +58,7 @@ class UserProgress {
       completedImageIds: completedImageIds ?? this.completedImageIds,
       savedStates: savedStates ?? this.savedStates,
       bestTimes: bestTimes ?? this.bestTimes,
+      achievements: achievements ?? this.achievements,
     );
   }
 
@@ -63,4 +70,47 @@ class UserProgress {
       .toList();
 
   int getBestTime(int level) => bestTimes[level] ?? 0;
+
+  // Achievement calculation methods
+  Map<String, bool> getCalculatedAchievements() {
+    final Map<String, bool> calculated = {};
+
+    // Fastest Solve
+    if (bestTimes.isNotEmpty) {
+      final fastestLevel = bestTimes.entries.reduce((a, b) => a.value < b.value ? a : b).key;
+      calculated['fastest_solve'] = true; // Always true if any best time exists
+    }
+
+    // Completion Milestones
+    final completedCount = completedLevels.length;
+    if (completedCount >= 5) calculated['complete_5'] = true;
+    if (completedCount >= 10) calculated['complete_10'] = true;
+    if (completedCount >= 17) calculated['complete_all'] = true;
+
+    // Speed Achievements
+    int under1Min = 0, under30Sec = 0, under10Sec = 0;
+    for (final time in bestTimes.values) {
+      if (time < 60) under1Min++;
+      if (time < 30) under30Sec++;
+      if (time < 10) under10Sec++;
+    }
+    if (under1Min > 0) calculated['under_1_min'] = true;
+    if (under30Sec > 0) calculated['under_30_sec'] = true;
+    if (under10Sec > 0) calculated['under_10_sec'] = true;
+
+    return calculated;
+  }
+
+  // Get fastest solve details
+  MapEntry<int, int>? getFastestSolve() {
+    if (bestTimes.isEmpty) return null;
+    return bestTimes.entries.reduce((a, b) => a.value < b.value ? a : b);
+  }
+
+  // Get average best time
+  double getAverageBestTime() {
+    if (bestTimes.isEmpty) return 0.0;
+    final total = bestTimes.values.reduce((a, b) => a + b);
+    return total / bestTimes.length;
+  }
 }
