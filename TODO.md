@@ -1,6 +1,0 @@
-- [ ] Modify the `_showHelp()` method in `lib/screens/play_screen_new.dart` to display a 3x3 puzzle preview grid instead of the full image.
-- [ ] Create a non-interactive 3x3 grid widget showing puzzle pieces in correct positions.
-- [ ] Position the 3x3 preview above the existing help text in the dialog content.
-- [ ] Ensure the dialog is appropriately sized to accommodate the 3x3 preview.
-- [ ] Test the help dialog to verify the 3x3 preview displays correctly.
-- [ ] Adjust preview sizing or dialog dimensions if necessary for better user experience.
