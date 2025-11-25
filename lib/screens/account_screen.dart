@@ -179,29 +179,6 @@ class _AccountScreenState extends State<AccountScreen> {
 
                       const SizedBox(height: 24),
 
-                      // Levels Completed
-                      Text(
-                        'Levels Completed',
-                        style: TextStyle(
-                          fontFamily: 'Poppins',
-                          color: Colors.white.withOpacity(0.8),
-                          fontSize: 18,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        '${_userProgress?.completedLevels.length ?? 0}',
-                        style: TextStyle(
-                          fontFamily: 'Poppins',
-                          color: Colors.white.withOpacity(0.95),
-                          fontSize: 24,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-
-                      const SizedBox(height: 24),
-
                       // Current Level
                       Text(
                         'Current Level',
