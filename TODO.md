@@ -1,7 +1,6 @@
-- [x] Update lib/screens/splash_screen.dart with the new implementation
-- [x] Change texts to "Puzzle Quest" and add a short description
-- [x] Make animation automatic in initState
-- [x] Remove button and import for BuildWithFlutterScreen
-- [x] Navigate to '/auth' after animation
-- [ ] Test the app
-- [ ] Add Logo.png to assets/images/ if needed
+- [x] Add AnimationController and Animation<double> for opacity control
+- [x] Initialize animation controller and opacity animation in initState
+- [x] Set up delayed fade-in (after 3 seconds) and fade-out (after another 2 seconds)
+- [x] Wrap the Greetings Container with AnimatedOpacity
+- [x] Remove the old _showOverlay boolean and Future.delayed logic
+- [x] Dispose the animation controller in dispose method

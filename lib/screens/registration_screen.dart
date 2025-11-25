@@ -6,7 +6,6 @@ import 'package:crypto/crypto.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:puzzle_quest/screens/home_screen.dart';
-import 'package:puzzle_quest/screens/login_screen.dart';
 
 
 class RegistrationScreen extends StatefulWidget {

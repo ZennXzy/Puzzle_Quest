@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'account_screen.dart';
@@ -9,19 +10,40 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
-  bool _showOverlay = true;
+class _HomeScreenState extends State<HomeScreen>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _animationController;
+  late Animation<double> _opacityAnimation;
 
   @override
   void initState() {
     super.initState();
+    _animationController = AnimationController(
+      duration: const Duration(seconds: 1),
+      vsync: this,
+    );
+    _opacityAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _animationController, curve: Curves.easeIn),
+    );
+
+    // Start fade-in after 3 seconds
     Future.delayed(const Duration(seconds: 3), () {
       if (mounted) {
-        setState(() {
-          _showOverlay = false;
+        _animationController.forward();
+        // Start fade-out after another 10 seconds
+        Future.delayed(const Duration(seconds: 10), () {
+          if (mounted) {
+            _animationController.reverse();
+          }
         });
       }
     });
+  }
+
+  @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
   }
 
   @override
@@ -106,11 +128,12 @@ class _HomeScreenState extends State<HomeScreen> {
 
                     const SizedBox(height: 20),
 
-                    Stack(
-                      alignment: Alignment.center,
-                      children: [
-                        if (!_showOverlay)
-                          Container(
+                    AnimatedBuilder(
+                      animation: _opacityAnimation,
+                      builder: (context, child) {
+                        return Opacity(
+                          opacity: _opacityAnimation.value,
+                          child: Container(
                             padding: const EdgeInsets.all(20),
                             margin: const EdgeInsets.symmetric(horizontal: 20),
                             decoration: BoxDecoration(
@@ -144,7 +167,8 @@ class _HomeScreenState extends State<HomeScreen> {
                               ],
                             ),
                           ),
-                      ],
+                        );
+                      },
                     ),
                   ],
                 ),
