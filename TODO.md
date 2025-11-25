@@ -1,6 +1,4 @@
-- [x] Add AnimationController and Animation<double> for opacity control
-- [x] Initialize animation controller and opacity animation in initState
-- [x] Set up delayed fade-in (after 3 seconds) and fade-out (after another 2 seconds)
-- [x] Wrap the Greetings Container with AnimatedOpacity
-- [x] Remove the old _showOverlay boolean and Future.delayed logic
-- [x] Dispose the animation controller in dispose method
+# TODO: Change App Name to "Puzzle Quest"
+
+- [ ] Update android/app/src/main/AndroidManifest.xml: Change android:label from "puzzle_quest" to "Puzzle Quest"
+- [ ] Update web/manifest.json: Change "name" and "short_name" from "puzzle_quest" to "Puzzle Quest"
