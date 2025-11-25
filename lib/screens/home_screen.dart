@@ -76,8 +76,8 @@ class HomeScreen extends StatelessWidget {
 
                     // Exit (outlined)
                     _MenuButton(
-                      width: buttonWidth,
-                      height: 72,
+                      width: buttonWidth * 0.84,
+                      height: 64,
                       label: 'Exit',
                       filled: false,
                       onTap: () {
