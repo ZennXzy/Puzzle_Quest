@@ -69,6 +69,7 @@ flutter:
 
   assets:
     - assets/images/
+    - assets/images/sdg_logos/
     - assets/sdg_images/
     - assets/audio/
 

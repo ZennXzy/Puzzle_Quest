@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'account_screen.dart';
+import 'dart:math';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -65,117 +66,130 @@ class _HomeScreenState extends State<HomeScreen>
           ),
         ),
         child: SafeArea(
-          child: Column(
+          child: Stack(
             children: [
-              const SizedBox(height: 36),
-              // Title
-              Text(
-                'Puzzle Quest',
-                style: TextStyle(
-                  fontFamily: 'Poppins',
-                  color: Colors.white.withOpacity(0.95),
-                  fontSize: 56,
-                  fontWeight: FontWeight.w600,
-                ),
-                textAlign: TextAlign.center,
+              // SDG Logo Scrolling Animation on the left (behind buttons)
+              Positioned(
+                left: 20,
+                top: 100,
+                bottom: 100,
+                child: _SDGLogoScroller(),
               ),
 
-              const SizedBox(height: 80),
-
-              // Buttons column
-              Center(
-                child: Column(
-                  children: [
-                    // Play (filled)
-                    _MenuButton(
-                      width: buttonWidth,
-                      height: buttonHeight,
-                      label: 'Play',
-                      filled: true,
-                      onTap: () {
-                        Navigator.pushNamed(context, '/play');
-                      },
+              // Main content
+              Column(
+                children: [
+                  const SizedBox(height: 36),
+                  // Title
+                  Text(
+                    'Puzzle Quest',
+                    style: TextStyle(
+                      fontFamily: 'Poppins',
+                      color: Colors.white.withOpacity(0.95),
+                      fontSize: 56,
+                      fontWeight: FontWeight.w600,
                     ),
+                    textAlign: TextAlign.center,
+                  ),
 
-                    const SizedBox(height: 24),
+                  const SizedBox(height: 80),
 
-                    // Account (outlined)
-                    _MenuButton(
-                      width: buttonWidth * 0.84,
-                      height: 64,
-                      label: 'Account',
-                      filled: false,
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (_) => const AccountScreen()),
-                        );
-                      },
-                    ),
+                  // Buttons column
+                  Center(
+                    child: Column(
+                      children: [
+                        // Play (filled)
+                        _MenuButton(
+                          width: buttonWidth,
+                          height: buttonHeight,
+                          label: 'Play',
+                          filled: true,
+                          onTap: () {
+                            Navigator.pushNamed(context, '/play');
+                          },
+                        ),
 
-                    const SizedBox(height: 24),
+                        const SizedBox(height: 24),
 
-                    // Exit (outlined)
-                    _MenuButton(
-                      width: buttonWidth * 0.84,
-                      height: 64,
-                      label: 'Exit',
-                      filled: false,
-                      onTap: () {
-                        SystemNavigator.pop();
-                      },
-                    ),
+                        // Account (outlined)
+                        _MenuButton(
+                          width: buttonWidth * 0.84,
+                          height: 64,
+                          label: 'Account',
+                          filled: false,
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (_) => const AccountScreen()),
+                            );
+                          },
+                        ),
 
-                    const SizedBox(height: 20),
+                        const SizedBox(height: 24),
 
-                    AnimatedBuilder(
-                      animation: _opacityAnimation,
-                      builder: (context, child) {
-                        return Opacity(
-                          opacity: _opacityAnimation.value,
-                          child: Container(
-                            padding: const EdgeInsets.all(20),
-                            margin: const EdgeInsets.symmetric(horizontal: 20),
-                            decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.1),
-                              borderRadius: BorderRadius.circular(16),
-                              border: Border.all(color: Colors.white.withOpacity(0.3), width: 1),
-                            ),
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Text(
-                                  'Greetings',
-                                  style: TextStyle(
-                                    fontFamily: 'Poppins',
-                                    fontSize: 20,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.white,
-                                  ),
-                                  textAlign: TextAlign.center,
+                        // Exit (outlined)
+                        _MenuButton(
+                          width: buttonWidth * 0.84,
+                          height: 64,
+                          label: 'Exit',
+                          filled: false,
+                          onTap: () {
+                            SystemNavigator.pop();
+                          },
+                        ),
+
+                        const SizedBox(height: 20),
+
+                        AnimatedBuilder(
+                          animation: _opacityAnimation,
+                          builder: (context, child) {
+                            return Opacity(
+                              opacity: _opacityAnimation.value,
+                              child: Container(
+                                padding: const EdgeInsets.all(20),
+                                margin: const EdgeInsets.symmetric(horizontal: 20),
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withOpacity(0.1),
+                                  borderRadius: BorderRadius.circular(16),
+                                  border: Border.all(color: Colors.white.withOpacity(0.3), width: 1),
                                 ),
-                                const SizedBox(height: 10),
-                                Text(
-                                  'Welcome to Puzzle Quest!',
-                                  style: TextStyle(
-                                    fontFamily: 'Poppins',
-                                    fontSize: 16,
-                                    color: Colors.white.withOpacity(0.9),
-                                  ),
-                                  textAlign: TextAlign.center,
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Text(
+                                      'Greetings',
+                                      style: TextStyle(
+                                        fontFamily: 'Poppins',
+                                        fontSize: 20,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.white,
+                                      ),
+                                      textAlign: TextAlign.center,
+                                    ),
+                                    const SizedBox(height: 10),
+                                    Text(
+                                      'Welcome to Puzzle Quest!',
+                                      style: TextStyle(
+                                        fontFamily: 'Poppins',
+                                        fontSize: 16,
+                                        color: Colors.white.withOpacity(0.9),
+                                      ),
+                                      textAlign: TextAlign.center,
+                                    ),
+                                  ],
                                 ),
-                              ],
-                            ),
-                          ),
-                        );
-                      },
+                              ),
+                            );
+                          },
+                        ),
+                      ],
                     ),
-                  ],
-                ),
+                  ),
+
+                  // flexible space for background art
+                  const Expanded(child: SizedBox()),
+                ],
               ),
-
-              // flexible space for background art
-              const Expanded(child: SizedBox()),
             ],
           ),
         ),
@@ -243,6 +257,82 @@ class _MenuButton extends StatelessWidget {
             ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _SDGLogoScroller extends StatefulWidget {
+  @override
+  _SDGLogoScrollerState createState() => _SDGLogoScrollerState();
+}
+
+class _SDGLogoScrollerState extends State<_SDGLogoScroller> with TickerProviderStateMixin {
+  late AnimationController _scrollController;
+  late Animation<double> _scrollAnimation;
+  final ScrollController _listScrollController = ScrollController();
+
+  final List<String> _logoPaths = [
+    'assets/images/sdg_logos/logo#1.png',
+    'assets/images/sdg_logos/logo#2.png',
+    'assets/images/sdg_logos/logo#3.png',
+    'assets/images/sdg_logos/logo#4.png',
+    'assets/images/sdg_logos/logo#5.png',
+    'assets/images/sdg_logos/logo#6.png',
+    'assets/images/sdg_logos/logo#10.png',
+    'assets/images/sdg_logos/logo#11.png',
+    'assets/images/sdg_logos/logo#12.png',
+    'assets/images/sdg_logos/logo#13.png',
+    'assets/images/sdg_logos/logo#14.png',
+    'assets/images/sdg_logos/logo#15.png',
+    'assets/images/sdg_logos/logo#16.png',
+    'assets/images/sdg_logos/logo#17.png',
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController = AnimationController(
+      duration: const Duration(seconds: 10),
+      vsync: this,
+    )..repeat(reverse: true);
+
+    _scrollAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(_scrollController);
+
+    _scrollAnimation.addListener(() {
+      if (_listScrollController.hasClients) {
+        double maxScrollExtent = _listScrollController.position.maxScrollExtent;
+        double scrollPosition = _scrollAnimation.value * maxScrollExtent;
+        _listScrollController.jumpTo(scrollPosition);
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    _listScrollController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 80,
+      child: ListView.builder(
+        controller: _listScrollController,
+        itemCount: _logoPaths.length,
+        itemBuilder: (context, index) {
+          return Container(
+            margin: const EdgeInsets.symmetric(vertical: 10),
+            child: Image.asset(
+              _logoPaths[index],
+              width: 60,
+              height: 60,
+              fit: BoxFit.contain,
+            ),
+          );
+        },
       ),
     );
   }
