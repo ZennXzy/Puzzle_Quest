@@ -4,6 +4,7 @@ class LevelCompletionOverlay extends StatelessWidget {
   final int level;
   final int timeElapsed;
   final bool isSaving;
+  final String? triviaFact;
   final VoidCallback onNextLevel;
   final VoidCallback onExit;
 
@@ -12,6 +13,7 @@ class LevelCompletionOverlay extends StatelessWidget {
     required this.level,
     required this.timeElapsed,
     required this.isSaving,
+    this.triviaFact,
     required this.onNextLevel,
     required this.onExit,
   });
@@ -144,7 +146,46 @@ class LevelCompletionOverlay extends StatelessWidget {
                 ],
               ),
 
-              const SizedBox(height: 32),
+              const SizedBox(height: 20),
+
+              // Trivia fact
+              if (triviaFact != null) ...[
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFE8F5E8),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: const Color(0xFF4CAF50),
+                      width: 1,
+                    ),
+                  ),
+                  child: Column(
+                    children: [
+                      const Text(
+                        'Did you know?',
+                        style: TextStyle(
+                          fontFamily: 'Poppins',
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF2E7D32),
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        triviaFact!,
+                        style: const TextStyle(
+                          fontFamily: 'Poppins',
+                          fontSize: 14,
+                          color: Color(0xFF0B1633),
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 20),
+              ],
 
               // Buttons
               Row(

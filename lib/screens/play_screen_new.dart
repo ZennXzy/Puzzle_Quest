@@ -25,6 +25,7 @@ class _PlayScreenState extends State<PlayScreen> {
   bool _showCompletionOverlay = false;
   bool _isSavingProgress = false;
   bool _isLoadingProgress = true;
+  String? _triviaFact;
 
   @override
   void initState() {
@@ -159,6 +160,9 @@ class _PlayScreenState extends State<PlayScreen> {
       print('Level $currentLevel completed! Starting save process...');
       _timer?.cancel();
 
+      // Fetch trivia
+      await _fetchTrivia();
+
       // Show completion overlay immediately
       setState(() {
         _showCompletionOverlay = true;
@@ -229,6 +233,35 @@ class _PlayScreenState extends State<PlayScreen> {
       _showCompletionOverlay = false;
     });
     Navigator.pop(context);
+  }
+
+  Future<void> _fetchTrivia() async {
+    try {
+      final response = await http.get(
+        Uri.parse('http://localhost/puzzle_quest/backend/sdg_trivia.php'),
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        if (data['success']) {
+          setState(() {
+            _triviaFact = data['fact'];
+          });
+        } else {
+          setState(() {
+            _triviaFact = 'Did you know? Puzzles improve cognitive skills!';
+          });
+        }
+      } else {
+        setState(() {
+          _triviaFact = 'Did you know? Puzzles improve cognitive skills!';
+        });
+      }
+    } catch (e) {
+      setState(() {
+        _triviaFact = 'Did you know? Puzzles improve cognitive skills!';
+      });
+    }
   }
 
   @override
@@ -405,6 +438,7 @@ class _PlayScreenState extends State<PlayScreen> {
               level: currentLevel,
               timeElapsed: timeElapsed,
               isSaving: _isSavingProgress,
+              triviaFact: _triviaFact,
               onNextLevel: _onNextLevel,
               onExit: _onExitLevel,
             ),
