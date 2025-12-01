@@ -68,12 +68,14 @@ class _HomeScreenState extends State<HomeScreen>
         child: SafeArea(
           child: Stack(
             children: [
-              // SDG Logo Scrolling Animation on the left (behind buttons)
+              // SDG Logos static at the bottom center
               Positioned(
-                left: 20,
-                top: 100,
-                bottom: 100,
-                child: _SDGLogoScroller(),
+                left: 0,
+                right: 0,
+                bottom: 20,
+                child: Center(
+                  child: _SDGLogoScroller(),
+                ),
               ),
 
               // Main content
@@ -262,23 +264,19 @@ class _MenuButton extends StatelessWidget {
   }
 }
 
-class _SDGLogoScroller extends StatefulWidget {
-  @override
-  _SDGLogoScrollerState createState() => _SDGLogoScrollerState();
-}
+class _SDGLogoScroller extends StatelessWidget {
+  const _SDGLogoScroller();
 
-class _SDGLogoScrollerState extends State<_SDGLogoScroller> with TickerProviderStateMixin {
-  late AnimationController _scrollController;
-  late Animation<double> _scrollAnimation;
-  final ScrollController _listScrollController = ScrollController();
-
-  final List<String> _logoPaths = [
+  final List<String> _logoPaths = const [
     'assets/images/sdg_logos/logo#1.png',
     'assets/images/sdg_logos/logo#2.png',
     'assets/images/sdg_logos/logo#3.png',
     'assets/images/sdg_logos/logo#4.png',
     'assets/images/sdg_logos/logo#5.png',
     'assets/images/sdg_logos/logo#6.png',
+    'assets/images/sdg_logos/logo#7.png',
+    'assets/images/sdg_logos/logo#8.png',
+    'assets/images/sdg_logos/logo#9.png',
     'assets/images/sdg_logos/logo#10.png',
     'assets/images/sdg_logos/logo#11.png',
     'assets/images/sdg_logos/logo#12.png',
@@ -290,47 +288,24 @@ class _SDGLogoScrollerState extends State<_SDGLogoScroller> with TickerProviderS
   ];
 
   @override
-  void initState() {
-    super.initState();
-    _scrollController = AnimationController(
-      duration: const Duration(seconds: 10),
-      vsync: this,
-    )..repeat(reverse: true);
-
-    _scrollAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(_scrollController);
-
-    _scrollAnimation.addListener(() {
-      if (_listScrollController.hasClients) {
-        double maxScrollExtent = _listScrollController.position.maxScrollExtent;
-        double scrollPosition = _scrollAnimation.value * maxScrollExtent;
-        _listScrollController.jumpTo(scrollPosition);
-      }
-    });
-  }
-
-  @override
-  void dispose() {
-    _scrollController.dispose();
-    _listScrollController.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
     return SizedBox(
-      width: 80,
-      child: ListView.builder(
-        controller: _listScrollController,
+      width: 280,
+      height: 80,
+      child: GridView.builder(
+        physics: const NeverScrollableScrollPhysics(),
+        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 7,
+          mainAxisSpacing: 5,
+          crossAxisSpacing: 5,
+        ),
         itemCount: _logoPaths.length,
         itemBuilder: (context, index) {
-          return Container(
-            margin: const EdgeInsets.symmetric(vertical: 10),
-            child: Image.asset(
-              _logoPaths[index],
-              width: 60,
-              height: 60,
-              fit: BoxFit.contain,
-            ),
+          return Image.asset(
+            _logoPaths[index],
+            width: 30,
+            height: 30,
+            fit: BoxFit.contain,
           );
         },
       ),
