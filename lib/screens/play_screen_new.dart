@@ -185,11 +185,12 @@ class _PlayScreenState extends State<PlayScreen> {
           completedImageIds: [],
           savedStates: {},
           bestTimes: {},
+          achievements: {},
         );
       }
     }
 
-    // Update user progress
+    // Update user progress with calculated achievements
     final updatedProgress = _userProgress!.copyWith(
       currentLevel: currentLevel + 1,
       completedImageIds: List.from(_userProgress!.completedImageIds)..add(_getImagePath()),
@@ -199,6 +200,7 @@ class _PlayScreenState extends State<PlayScreen> {
             : (timeElapsed < (_userProgress!.bestTimes[currentLevel] ?? 0)
                 ? timeElapsed
                 : (_userProgress!.bestTimes[currentLevel] ?? 0)),
+      achievements: _userProgress!.getCalculatedAchievements(),
     );
 
     // Save to Firebase

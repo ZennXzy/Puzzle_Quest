@@ -21,6 +21,7 @@ CREATE TABLE IF NOT EXISTS `user_progress` (
   `completed_levels` JSON NOT NULL DEFAULT ('[]'),
   `saved_states` JSON NOT NULL DEFAULT ('{}'),
   `best_times` JSON NOT NULL DEFAULT ('{}'),
+  `achievements` JSON NOT NULL DEFAULT ('{}'),
   `updated_at` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   UNIQUE KEY `idx_user_progress_user_id` (`user_id`),
