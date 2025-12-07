@@ -71,7 +71,7 @@ class _HomeScreenState extends State<HomeScreen>
               Positioned(
                 left: 0,
                 right: 0,
-                bottom: 20,
+                bottom: 40,
                 child: Center(
                   child: _SDGLogoScroller(),
                 ),
@@ -290,23 +290,52 @@ class _SDGLogoScroller extends StatelessWidget {
   Widget build(BuildContext context) {
     return SizedBox(
       width: 280,
-      height: 80,
-      child: GridView.builder(
-        physics: const NeverScrollableScrollPhysics(),
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 7,
-          mainAxisSpacing: 5,
-          crossAxisSpacing: 5,
-        ),
-        itemCount: _logoPaths.length,
-        itemBuilder: (context, index) {
-          return Image.asset(
-            _logoPaths[index],
-            width: 30,
-            height: 30,
-            fit: BoxFit.contain,
-          );
-        },
+      height: 100,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          // First row: 7 logos
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: List.generate(7, (index) => Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 2.5),
+              child: Image.asset(
+                _logoPaths[index],
+                width: 30,
+                height: 30,
+                fit: BoxFit.contain,
+              ),
+            )),
+          ),
+          const SizedBox(height: 5),
+          // Second row: 7 logos
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: List.generate(7, (index) => Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 2.5),
+              child: Image.asset(
+                _logoPaths[index + 7],
+                width: 30,
+                height: 30,
+                fit: BoxFit.contain,
+              ),
+            )),
+          ),
+          const SizedBox(height: 5),
+          // Third row: 3 logos, centered
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: List.generate(3, (index) => Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 2.5),
+              child: Image.asset(
+                _logoPaths[index + 14],
+                width: 30,
+                height: 30,
+                fit: BoxFit.contain,
+              ),
+            )),
+          ),
+        ],
       ),
     );
   }
