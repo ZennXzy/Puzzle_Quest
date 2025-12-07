@@ -46,6 +46,10 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
       final authService = AuthService();
       await authService.signUp(email, password, name);
 
+      // Save username to SharedPreferences
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('current_user', name);
+
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Registered and logged in successfully')));
 
       // Navigate to HomeScreen

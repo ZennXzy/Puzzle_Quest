@@ -4,6 +4,8 @@ import 'dart:convert';
 import '../models/user_progress.dart';
 import '../widgets/achievements_widget.dart';
 import 'login_screen.dart';
+import '../services/progress_service.dart';
+import '../services/auth_service.dart';
 
 class AccountScreen extends StatefulWidget {
   const AccountScreen({super.key});
@@ -23,21 +25,58 @@ class _AccountScreenState extends State<AccountScreen> {
   }
 
   Future<void> _loadUserData() async {
-    final prefs = await SharedPreferences.getInstance();
-    final currentUser = prefs.getString('current_user');
-    if (currentUser != null) {
-      final progressJson = prefs.getString('user_progress_$currentUser');
+    final authService = AuthService();
+    final user = authService.currentUser;
+    if (user != null) {
+      // Try to load username from Firestore
+      try {
+        final userData = await authService.getUserData(user.uid);
+        if (userData != null && userData['name'] != null) {
+          _username = userData['name'];
+          print('Username loaded from Firestore: $_username');
+        }
+      } catch (e) {
+        print('Error loading username from Firestore: $e');
+      }
+
+      // Fallback to SharedPreferences if not loaded from Firestore
+      if (_username == null) {
+        final prefs = await SharedPreferences.getInstance();
+        final currentUser = prefs.getString('current_user');
+        if (currentUser != null) {
+          _username = currentUser;
+          print('Username fallback to SharedPreferences: $_username');
+        }
+      }
+
+      // Update UI for username
+      setState(() {});
+
+      // Load progress
+      try {
+        final progressService = ProgressService();
+        final userProgress = await progressService.loadProgress();
+        if (userProgress != null) {
+          setState(() {
+            _userProgress = userProgress;
+          });
+          return;
+        }
+      } catch (e) {
+        print('Error loading progress from Firebase: $e');
+      }
+
+      // Fallback to local storage for progress
+      final prefs = await SharedPreferences.getInstance();
+      final progressJson = prefs.getString('user_progress_${user.uid}');
       if (progressJson != null) {
         final progressData = jsonDecode(progressJson) as Map<String, dynamic>;
         setState(() {
           _userProgress = UserProgress.fromJson(progressData);
-          _username = currentUser;
-        });
-      } else {
-        setState(() {
-          _username = currentUser;
         });
       }
+    } else {
+      print('No authenticated user found');
     }
   }
 

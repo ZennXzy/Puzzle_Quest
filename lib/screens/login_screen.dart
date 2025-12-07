@@ -33,9 +33,15 @@ class _LoginScreenState extends State<LoginScreen> {
     try {
       await _authService.signIn(email, password);
 
+      // Save username to SharedPreferences
+      final prefs = await SharedPreferences.getInstance();
+      final username = _authService.currentUser?.displayName ?? '';
+      if (username.isNotEmpty) {
+        await prefs.setString('current_user', username);
+      }
+
       // Optionally store remembered email
       if (remember) {
-        final prefs = await SharedPreferences.getInstance();
         await prefs.setString('remember_email', email);
       }
 

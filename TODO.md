@@ -1,8 +1,5 @@
-# TODO: Create SDG Trivia Database
+# TODO: Fix registered username not showing in Accounts Screen
 
-- [x] Add 'sdg_trivia' table to init.sql with columns: id, sdg_number (1-17), fact
-- [x] Insert 5 trivia facts for each of the 17 SDGs into init.sql
-- [x] Update db.php to provide PDO connection alongside mysqli
-- [x] Update sdg_trivia.php to use PDO from db.php
-- [x] Add random trivia to level completion overlay
-- [ ] Test the trivia endpoint
+- [ ] Modify registration_screen.dart to save username to SharedPreferences after successful registration
+- [ ] Modify login_screen.dart to save username to SharedPreferences after successful login
+- [ ] Test registration and login flows to verify username displays in AccountScreen

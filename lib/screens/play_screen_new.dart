@@ -7,6 +7,7 @@ import '../widgets/puzzle_widget.dart';
 import '../widgets/puzzle_preview_widget.dart';
 import '../widgets/level_completion_overlay.dart';
 import '../models/user_progress.dart';
+import '../services/progress_service.dart';
 
 class PlayScreen extends StatefulWidget {
   const PlayScreen({super.key});
@@ -47,27 +48,20 @@ class _PlayScreenState extends State<PlayScreen> {
     if (currentUser != null) {
       _currentUser = currentUser;
 
-      // First try to load from backend
+      // First try to load from Firebase
       try {
-        final response = await http.post(
-          Uri.parse('http://localhost/puzzle_quest/backend/load_progress.php'),
-          body: {'email': currentUser},
-        );
-
-        if (response.statusCode == 200) {
-          final data = jsonDecode(response.body);
-          if (data['success'] == true) {
-            final userProgress = UserProgress.fromJson(data['progress']);
-            setState(() {
-              _userProgress = userProgress;
-              currentLevel = userProgress.currentLevel;
-              _isLoadingProgress = false;
-            });
-            return;
-          }
+        final progressService = ProgressService();
+        final userProgress = await progressService.loadProgress();
+        if (userProgress != null) {
+          setState(() {
+            _userProgress = userProgress;
+            currentLevel = userProgress.currentLevel;
+            _isLoadingProgress = false;
+          });
+          return;
         }
       } catch (e) {
-        print('Error loading from backend: $e');
+        print('Error loading from Firebase: $e');
       }
 
       // Fallback to local storage
@@ -206,6 +200,14 @@ class _PlayScreenState extends State<PlayScreen> {
                 ? timeElapsed
                 : (_userProgress!.bestTimes[currentLevel] ?? 0)),
     );
+
+    // Save to Firebase
+    try {
+      final progressService = ProgressService();
+      await progressService.saveProgress(updatedProgress);
+    } catch (e) {
+      print('Error saving to Firebase: $e');
+    }
 
     // Save to local storage
     final prefs = await SharedPreferences.getInstance();
