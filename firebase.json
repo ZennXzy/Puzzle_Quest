@@ -1,1 +1,24 @@
-{"flutter":{"platforms":{"android":{"default":{"projectId":"puzzle-quest-c5c7e","appId":"1:307859235376:android:6717c493edc986266143f5","fileOutput":"android/app/google-services.json"}},"dart":{"lib/firebase_options.dart":{"projectId":"puzzle-quest-c5c7e","configurations":{"android":"1:307859235376:android:6717c493edc986266143f5"}}}}}}
+{
+  "flutter": {
+    "platforms": {
+      "android": {
+        "default": {
+          "projectId": "puzzle-quest-c5c7e",
+          "appId": "1:307859235376:android:6717c493edc986266143f5",
+          "fileOutput": "android/app/google-services.json"
+        }
+      },
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "puzzle-quest-c5c7e",
+          "configurations": {
+            "android": "1:307859235376:android:6717c493edc986266143f5"
+          }
+        }
+      }
+    }
+  },
+  "firestore": {
+    "rules": "firestore.rules"
+  }
+}
