@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:puzzle_quest/screens/registration_screen.dart';
 import 'package:puzzle_quest/screens/home_screen.dart';
+import 'package:puzzle_quest/services/auth_service.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -18,6 +19,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
+  final AuthService _authService = AuthService();
   bool remember = false;
   bool _loading = false;
 
@@ -29,34 +31,11 @@ class _LoginScreenState extends State<LoginScreen> {
     final password = passwordController.text;
 
     try {
-      final prefs = await SharedPreferences.getInstance();
-      final usersJson = prefs.getString('local_users') ?? '[]';
-      final List<dynamic> users = jsonDecode(usersJson);
-
-      // Find user by email
-      final userIndex = users.indexWhere((u) => (u['email'] as String).toLowerCase() == email);
-      if (userIndex == -1) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('User not found')));
-        return;
-      }
-
-      final user = users[userIndex] as Map<String, dynamic>;
-      final storedHash = user['password_hash'] as String;
-      final salt = user['salt'] as String;
-
-      // Verify password
-      final inputHash = _hashPassword(password, salt);
-      if (inputHash != storedHash) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Invalid password')));
-        return;
-      }
-
-      // Login successful
-      await prefs.setString('current_user', user['name']);
-      await prefs.setString('current_user_email', user['email']);
+      await _authService.signIn(email, password);
 
       // Optionally store remembered email
       if (remember) {
+        final prefs = await SharedPreferences.getInstance();
         await prefs.setString('remember_email', email);
       }
 
@@ -96,11 +75,7 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
-  String _hashPassword(String password, String salt) {
-    final bytes = utf8.encode(salt + password);
-    final digest = sha256.convert(bytes);
-    return digest.toString();
-  }
+
 
   @override
   Widget build(BuildContext context) {

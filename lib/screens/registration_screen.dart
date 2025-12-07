@@ -6,6 +6,7 @@ import 'package:crypto/crypto.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:puzzle_quest/screens/home_screen.dart';
+import 'package:puzzle_quest/services/auth_service.dart';
 
 
 class RegistrationScreen extends StatefulWidget {
@@ -41,34 +42,8 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
     final password = _password.text;
 
     try {
-      final prefs = await SharedPreferences.getInstance();
-      final usersJson = prefs.getString('local_users') ?? '[]';
-      final List<dynamic> users = jsonDecode(usersJson);
-
-      // check existing email
-      final existing = users.cast<Map<String, dynamic>>().where((u) => (u['email'] as String).toLowerCase() == email);
-      if (existing.isNotEmpty) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Email already registered')));
-        return;
-      }
-
-      // generate salt and hash
-      final salt = _generateSalt();
-      final passwordHash = _hashPassword(password, salt);
-
-      final newUser = {
-        'name': name,
-        'email': email,
-        'password_hash': passwordHash,
-        'salt': salt,
-        'created_at': DateTime.now().toIso8601String(),
-      };
-
-      users.add(newUser);
-      await prefs.setString('local_users', jsonEncode(users));
-
-      // Auto-login with username
-      await prefs.setString('current_user', name);
+      final authService = AuthService();
+      await authService.signUp(email, password, name);
 
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Registered and logged in successfully')));
 
