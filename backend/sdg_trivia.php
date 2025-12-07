@@ -11,13 +11,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 require_once 'db.php';
 
 try {
-    $stmt = $pdo->query("SELECT fact FROM sdg_trivia ORDER BY RAND() LIMIT 1");
-    $result = $stmt->fetch(PDO::FETCH_ASSOC);
+    $level = isset($_GET['level']) ? (int)$_GET['level'] : null;
 
-    if ($result) {
-        echo json_encode(['success' => true, 'fact' => $result['fact']]);
+    if ($level !== null && $level >= 1 && $level <= 17) {
+        // Fetch random fact for specific SDG number
+        $stmt = $pdo->prepare("SELECT fact FROM sdg_trivia WHERE sdg_number = ? ORDER BY RAND() LIMIT 1");
+        $stmt->execute([$level]);
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if ($result) {
+            echo json_encode(['success' => true, 'fact' => $result['fact']]);
+        } else {
+            echo json_encode(['success' => false, 'message' => 'No trivia found for this SDG']);
+        }
     } else {
-        echo json_encode(['success' => false, 'message' => 'No trivia found']);
+        // Fallback to random fact if no valid level provided
+        $stmt = $pdo->query("SELECT fact FROM sdg_trivia ORDER BY RAND() LIMIT 1");
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if ($result) {
+            echo json_encode(['success' => true, 'fact' => $result['fact']]);
+        } else {
+            echo json_encode(['success' => false, 'message' => 'No trivia found']);
+        }
     }
 } catch (Exception $e) {
     echo json_encode(['success' => false, 'message' => $e->getMessage()]);
