@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
+import 'package:firebase_auth/firebase_auth.dart';
 import '../widgets/puzzle_widget.dart';
 import '../widgets/puzzle_preview_widget.dart';
 import '../widgets/level_completion_overlay.dart';
@@ -44,6 +45,8 @@ class _PlayScreenState extends State<PlayScreen> {
   Future<void> _loadUserProgress() async {
     final prefs = await SharedPreferences.getInstance();
     final currentUser = prefs.getString('current_user');
+    final auth = FirebaseAuth.instance;
+    final user = auth.currentUser;
 
     if (currentUser != null) {
       _currentUser = currentUser;
@@ -65,7 +68,8 @@ class _PlayScreenState extends State<PlayScreen> {
       }
 
       // Fallback to local storage
-      final progressJson = prefs.getString('user_progress_$currentUser');
+      final localKey = user != null ? 'user_progress_${user.uid}' : 'user_progress_$currentUser';
+      final progressJson = prefs.getString(localKey);
       if (progressJson != null) {
         final progressData = jsonDecode(progressJson) as Map<String, dynamic>;
         final userProgress = UserProgress.fromJson(progressData);

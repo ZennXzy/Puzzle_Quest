@@ -80,6 +80,38 @@ class _AccountScreenState extends State<AccountScreen> {
     }
   }
 
+  Future<void> _loadProgress() async {
+    final authService = AuthService();
+    final user = authService.currentUser;
+    if (user != null) {
+      // Load progress
+      try {
+        final progressService = ProgressService();
+        final userProgress = await progressService.loadProgress();
+        if (userProgress != null) {
+          setState(() {
+            _userProgress = userProgress;
+          });
+          return;
+        }
+      } catch (e) {
+        print('Error loading progress from Firebase: $e');
+      }
+
+      // Fallback to local storage for progress
+      final prefs = await SharedPreferences.getInstance();
+      final progressJson = prefs.getString('user_progress_${user.uid}');
+      if (progressJson != null) {
+        final progressData = jsonDecode(progressJson) as Map<String, dynamic>;
+        setState(() {
+          _userProgress = UserProgress.fromJson(progressData);
+        });
+      }
+    } else {
+      print('No authenticated user found');
+    }
+  }
+
   Future<void> _logout() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove('current_user');
@@ -109,195 +141,204 @@ class _AccountScreenState extends State<AccountScreen> {
           ),
         ),
         child: SafeArea(
-          child: Column(
-            children: [
-              // AppBar with back button
-              Container(
-                decoration: BoxDecoration(
-                  color: const Color(0xFF000728),
-                  border: Border(
-                    bottom: BorderSide(
-                      color: Colors.white,
-                      width: 2.0,
+          child: RefreshIndicator(
+            onRefresh: _loadProgress,
+            color: Colors.white,
+            backgroundColor: Colors.purple,
+            child: ListView(
+              children: [
+                // AppBar with back button
+                Container(
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF000728),
+                    border: Border(
+                      bottom: BorderSide(
+                        color: Colors.white,
+                        width: 2.0,
+                      ),
+                    ),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                    child: Row(
+                      children: [
+                        // Back button
+                        Material(
+                          color: Colors.transparent,
+                          child: InkWell(
+                            borderRadius: BorderRadius.circular(12),
+                            onTap: () {
+                              Navigator.pop(context);
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.all(8),
+                              child: Icon(
+                                Icons.arrow_back,
+                                color: Colors.white.withOpacity(0.95),
+                                size: 28,
+                              ),
+                            ),
+                          ),
+                        ),
+
+                        // Title
+                        Expanded(
+                          child: Text(
+                            'Account',
+                            style: TextStyle(
+                              fontFamily: 'Poppins',
+                              color: Colors.white.withOpacity(0.95),
+                              fontSize: 32,
+                              fontWeight: FontWeight.w600,
+                              letterSpacing: 1.2,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+
+                        // Spacer for balance
+                        const SizedBox(width: 44),
+                      ],
                     ),
                   ),
                 ),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-                  child: Row(
-                    children: [
-                      // Back button
-                      Material(
-                        color: Colors.transparent,
-                        child: InkWell(
-                          borderRadius: BorderRadius.circular(12),
-                          onTap: () {
-                            Navigator.pop(context);
-                          },
-                          child: Container(
-                            padding: const EdgeInsets.all(8),
-                            child: Icon(
-                              Icons.arrow_back,
+
+                const SizedBox(height: 40),
+
+                // Account card
+                Center(
+                  child: Container(
+                    width: width > 520 ? 460 : width * 0.92,
+                    constraints: BoxConstraints(
+                      maxHeight: MediaQuery.of(context).size.height * 0.6,
+                    ),
+                    padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 26),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(22),
+                      gradient: LinearGradient(
+                        colors: [
+                          Colors.white.withOpacity(0.06),
+                          Colors.white.withOpacity(0.03)
+                        ],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      border: Border.all(color: Colors.white.withOpacity(0.6), width: 2),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.35),
+                          blurRadius: 18,
+                          offset: const Offset(6, 8),
+                        ),
+                      ],
+                    ),
+                    child: SingleChildScrollView(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Username
+                          Text(
+                            'Username',
+                            style: TextStyle(
+                              fontFamily: 'Poppins',
+                              color: Colors.white.withOpacity(0.8),
+                              fontSize: 18,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            _username ?? 'Loading...',
+                            style: TextStyle(
+                              fontFamily: 'Poppins',
                               color: Colors.white.withOpacity(0.95),
-                              size: 28,
+                              fontSize: 24,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+
+                          const SizedBox(height: 24),
+
+                          // Current Level
+                          Text(
+                            'Current Level',
+                            style: TextStyle(
+                              fontFamily: 'Poppins',
+                              color: Colors.white.withOpacity(0.8),
+                              fontSize: 18,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            '${_userProgress?.currentLevel ?? 1}',
+                            style: TextStyle(
+                              fontFamily: 'Poppins',
+                              color: Colors.white.withOpacity(0.95),
+                              fontSize: 24,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+
+                          const SizedBox(height: 24),
+
+                          // Achievements Widget
+                          AchievementsWidget(userProgress: _userProgress),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 20),
+
+                // Logout button
+                Center(
+                  child: Container(
+                    width: width > 520 ? 460 : width * 0.92,
+                    height: 52,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(12),
+                      gradient: LinearGradient(
+                        colors: [Colors.red.shade300.withOpacity(0.9), Colors.red.shade200.withOpacity(0.7)],
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.35),
+                          offset: const Offset(4, 6),
+                          blurRadius: 10,
+                        ),
+                        BoxShadow(
+                          color: Colors.white.withOpacity(0.18),
+                          offset: const Offset(-2, -2),
+                          blurRadius: 6,
+                        ),
+                      ],
+                    ),
+                    child: Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(12),
+                        onTap: _logout,
+                        child: const Center(
+                          child: Text(
+                            'Logout',
+                            style: TextStyle(
+                              fontFamily: 'Poppins',
+                              color: Colors.white,
+                              fontSize: 20,
+                              fontWeight: FontWeight.w500,
                             ),
                           ),
                         ),
                       ),
-
-                      // Title
-                      Expanded(
-                        child: Text(
-                          'Account',
-                          style: TextStyle(
-                            fontFamily: 'Poppins',
-                            color: Colors.white.withOpacity(0.95),
-                            fontSize: 32,
-                            fontWeight: FontWeight.w600,
-                            letterSpacing: 1.2,
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                      ),
-
-                      // Spacer for balance
-                      const SizedBox(width: 44),
-                    ],
-                  ),
-                ),
-              ),
-
-              const SizedBox(height: 40),
-
-              // Account card
-              Center(
-                child: Container(
-                  width: width > 520 ? 460 : width * 0.92,
-                  constraints: BoxConstraints(
-                    maxHeight: MediaQuery.of(context).size.height * 0.6,
-                  ),
-                  padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 26),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(22),
-                    gradient: LinearGradient(
-                      colors: [
-                        Colors.white.withOpacity(0.06),
-                        Colors.white.withOpacity(0.03)
-                      ],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-                    border: Border.all(color: Colors.white.withOpacity(0.6), width: 2),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.35),
-                        blurRadius: 18,
-                        offset: const Offset(6, 8),
-                      ),
-                    ],
-                  ),
-                  child: SingleChildScrollView(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Username
-                        Text(
-                          'Username',
-                          style: TextStyle(
-                            fontFamily: 'Poppins',
-                            color: Colors.white.withOpacity(0.8),
-                            fontSize: 18,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          _username ?? 'Loading...',
-                          style: TextStyle(
-                            fontFamily: 'Poppins',
-                            color: Colors.white.withOpacity(0.95),
-                            fontSize: 24,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-
-                        const SizedBox(height: 24),
-
-                        // Current Level
-                        Text(
-                          'Current Level',
-                          style: TextStyle(
-                            fontFamily: 'Poppins',
-                            color: Colors.white.withOpacity(0.8),
-                            fontSize: 18,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          '${_userProgress?.currentLevel ?? 1}',
-                          style: TextStyle(
-                            fontFamily: 'Poppins',
-                            color: Colors.white.withOpacity(0.95),
-                            fontSize: 24,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-
-                        const SizedBox(height: 24),
-
-                        // Achievements Widget
-                        AchievementsWidget(userProgress: _userProgress),
-                      ],
                     ),
                   ),
                 ),
-              ),
 
-              const SizedBox(height: 20),
-
-              // Logout button
-              Container(
-                width: width > 520 ? 460 : width * 0.92,
-                height: 52,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(12),
-                  gradient: LinearGradient(
-                    colors: [Colors.red.shade300.withOpacity(0.9), Colors.red.shade200.withOpacity(0.7)],
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.35),
-                      offset: const Offset(4, 6),
-                      blurRadius: 10,
-                    ),
-                    BoxShadow(
-                      color: Colors.white.withOpacity(0.18),
-                      offset: const Offset(-2, -2),
-                      blurRadius: 6,
-                    ),
-                  ],
-                ),
-                child: Material(
-                  color: Colors.transparent,
-                  child: InkWell(
-                    borderRadius: BorderRadius.circular(12),
-                    onTap: _logout,
-                    child: const Center(
-                      child: Text(
-                        'Logout',
-                        style: TextStyle(
-                          fontFamily: 'Poppins',
-                          color: Colors.white,
-                          fontSize: 20,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ],
+                const SizedBox(height: 20), // Extra space for refresh indicator
+              ],
+            ),
           ),
         ),
       ),

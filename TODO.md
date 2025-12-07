@@ -1,14 +1,11 @@
-# TODO: Implement Progression Save to Firebase using Local Backend as Reference
+# TODO: Switch User Progress Saving to Firebase Realtime Database
 
-## Completed Tasks
-- [x] Modified `backend/load_progress.php` to load progress from Firebase Firestore via REST API with local fallback
-- [x] Updated `lib/services/progress_service.dart` to use backend endpoints instead of direct Firebase calls
-- [x] Verified `backend/save_progress.php` already saves to Firebase Firestore via REST API
-- [x] Confirmed http package is available in pubspec.yaml
-
-## Followup Steps
-- [ ] Test saving/loading progress with achievements
-- [ ] Verify Firebase data consistency
-- [ ] Update any other screens that load progress if needed
-- [ ] Ensure ID token is passed from Flutter app to backend endpoints
-- [ ] Test fallback to local database when Firebase is unavailable
+## Tasks
+- [ ] Update lib/services/progress_service.dart to import firebase_database and firebase_auth
+- [ ] Modify saveProgress method to use DatabaseReference.set() for saving progress under /users/{uid}/progress
+- [ ] Modify loadProgress method to use DatabaseReference.once() for loading progress
+- [ ] Ensure Firebase Auth integration for user authentication in progress operations
+- [ ] Test saving progress data (currentLevel, completedImageIds, bestTimes, achievements)
+- [ ] Test loading progress data and handling no data cases
+- [ ] Verify error handling for network issues or authentication failures
+- [ ] Ensure backward compatibility or migration from existing Firestore/Local storage (if needed)
