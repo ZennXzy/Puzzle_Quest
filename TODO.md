@@ -1,11 +1,14 @@
-# TODO: Implement SDG-Specific Trivia in Level Completion Overlay
+# Task: Add SDG Logo to Completion Overlay
 
-## Tasks
-- [x] Modify backend/sdg_trivia.php to accept 'level' parameter and fetch trivia for specific SDG number
-- [x] Update lib/screens/play_screen_new.dart to pass currentLevel in the trivia fetch request
-- [x] Test the implementation by completing a level and verifying correct SDG trivia is displayed (Code review completed - implementation is correct)
+## Completed Tasks
+- [x] Analyzed the task requirements and project structure
+- [x] Read relevant files (backend/sdg_trivia.php, lib/widgets/level_completion_overlay.dart, lib/screens/play_screen_new.dart)
+- [x] Identified SDG logo assets in assets/images/sdg_logos/ (logo#1.png through logo#17.png)
+- [x] Created plan to modify LevelCompletionOverlay widget
+- [x] Modified lib/widgets/level_completion_overlay.dart to add SDG logo at top right
+- [x] Fixed syntax errors in the modified file
 
-## Notes
-- Levels 1-17 correspond to SDG 1-17
-- If level > 17, consider showing a random fact or default message (not implemented yet)
-- Ensure backward compatibility if no level parameter is provided
+## Followup Steps
+- [ ] Test the overlay display with different levels to ensure correct logo loading
+- [ ] Verify positioning and sizing on various screen sizes
+- [ ] Run the app to confirm the changes work as expected
