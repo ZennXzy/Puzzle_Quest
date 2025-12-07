@@ -17,19 +17,13 @@ import 'package:flutter/foundation.dart'
 class DefaultFirebaseOptions {
   static FirebaseOptions get currentPlatform {
     if (kIsWeb) {
-      throw UnsupportedError(
-        'DefaultFirebaseOptions have not been configured for web - '
-        'you can reconfigure this by running the FlutterFire CLI again.',
-      );
+      return web;
     }
     switch (defaultTargetPlatform) {
       case TargetPlatform.android:
         return android;
       case TargetPlatform.iOS:
-        throw UnsupportedError(
-          'DefaultFirebaseOptions have not been configured for ios - '
-          'you can reconfigure this by running the FlutterFire CLI again.',
-        );
+        return ios;
       case TargetPlatform.macOS:
         throw UnsupportedError(
           'DefaultFirebaseOptions have not been configured for macos - '
@@ -59,6 +53,27 @@ class DefaultFirebaseOptions {
     projectId: 'puzzle-quest-c5c7e',
     databaseURL: 'https://puzzle-quest-c5c7e-default-rtdb.asia-southeast1.firebasedatabase.app',
     storageBucket: 'puzzle-quest-c5c7e.firebasestorage.app',
+  );
+
+  static const FirebaseOptions web = FirebaseOptions(
+    apiKey: 'AIzaSyDafprsJop6rz0ICo-ol_KuwY766iZF6P8',
+    appId: '1:307859235376:web:b7c778dc5e211a7d6143f5',
+    messagingSenderId: '307859235376',
+    projectId: 'puzzle-quest-c5c7e',
+    authDomain: 'puzzle-quest-c5c7e.firebaseapp.com',
+    databaseURL: 'https://puzzle-quest-c5c7e-default-rtdb.asia-southeast1.firebasedatabase.app',
+    storageBucket: 'puzzle-quest-c5c7e.firebasestorage.app',
+    measurementId: 'G-4N85EPT4ZC',
+  );
+
+  static const FirebaseOptions ios = FirebaseOptions(
+    apiKey: 'AIzaSyCjejLVmoDPL2T2BGs24vxu8GZ2639QQZY',
+    appId: '1:307859235376:ios:67acbe7a9b2f280d6143f5',
+    messagingSenderId: '307859235376',
+    projectId: 'puzzle-quest-c5c7e',
+    databaseURL: 'https://puzzle-quest-c5c7e-default-rtdb.asia-southeast1.firebasedatabase.app',
+    storageBucket: 'puzzle-quest-c5c7e.firebasestorage.app',
+    iosBundleId: 'com.example.puzzleQuest',
   );
 
 }
