@@ -374,7 +374,7 @@ class _AccountScreenState extends State<AccountScreen> {
                           const SizedBox(height: 24),
 
                           // Achievements Widget
-                          AchievementsWidget(userProgress: _userProgress),
+                          AchievementsWidget(userProgress: _userProgress, hardUserProgress: _hardProgress),
                         ],
                       ),
                     ),
