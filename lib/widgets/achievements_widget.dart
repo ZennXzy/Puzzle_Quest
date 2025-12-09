@@ -28,10 +28,11 @@ class _AchievementsWidgetState extends State<AchievementsWidget> {
   @override
   Widget build(BuildContext context) {
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Text(
           'Achievements',
+          textAlign: TextAlign.center,
           style: TextStyle(
             fontFamily: 'Poppins',
             color: Colors.white.withOpacity(0.8),
