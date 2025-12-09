@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 import '../models/user_progress.dart';
+import '../models/hard_user_progress.dart';
+import '../services/hard_progress_service.dart';
 import '../widgets/achievements_widget.dart';
 import 'login_screen.dart';
 import '../services/progress_service.dart';
@@ -16,6 +18,7 @@ class AccountScreen extends StatefulWidget {
 
 class _AccountScreenState extends State<AccountScreen> {
   UserProgress? _userProgress;
+  HardUserProgress? _hardProgress;
   String? _username;
 
   @override
@@ -60,19 +63,39 @@ class _AccountScreenState extends State<AccountScreen> {
           setState(() {
             _userProgress = userProgress;
           });
-          return;
         }
       } catch (e) {
         print('Error loading progress from Firebase: $e');
       }
 
+      // Load hard progress
+      try {
+        final hardService = HardProgressService();
+        final hardProgress = await hardService.loadProgress();
+        if (hardProgress != null) {
+          setState(() {
+            _hardProgress = hardProgress;
+          });
+        }
+      } catch (e) {
+        print('Error loading hard progress from Firebase: $e');
+      }
+
       // Fallback to local storage for progress
       final prefs = await SharedPreferences.getInstance();
       final progressJson = prefs.getString('user_progress_${user.uid}');
-      if (progressJson != null) {
+      if (progressJson != null && _userProgress == null) {
         final progressData = jsonDecode(progressJson) as Map<String, dynamic>;
         setState(() {
           _userProgress = UserProgress.fromJson(progressData);
+        });
+      }
+      // Fallback for hard progress local copy
+      final hardProgressJson = prefs.getString('hard_user_progress_${user.uid}');
+      if (hardProgressJson != null && _hardProgress == null) {
+        final hardData = jsonDecode(hardProgressJson) as Map<String, dynamic>;
+        setState(() {
+          _hardProgress = HardUserProgress.fromJson(hardData);
         });
       }
     } else {
@@ -106,6 +129,28 @@ class _AccountScreenState extends State<AccountScreen> {
         setState(() {
           _userProgress = UserProgress.fromJson(progressData);
         });
+      }
+
+      // Also load Hard progress when refreshing
+      try {
+        final hardService = HardProgressService();
+        final hardProgress = await hardService.loadProgress();
+        if (hardProgress != null) {
+          setState(() {
+            _hardProgress = hardProgress;
+          });
+        } else {
+          // fallback to local prefs
+          final hardProgressJson = prefs.getString('hard_user_progress_${user.uid}');
+          if (hardProgressJson != null) {
+            final hardData = jsonDecode(hardProgressJson) as Map<String, dynamic>;
+            setState(() {
+              _hardProgress = HardUserProgress.fromJson(hardData);
+            });
+          }
+        }
+      } catch (e) {
+        print('Error loading hard progress during refresh: $e');
       }
     } else {
       print('No authenticated user found');
@@ -259,7 +304,7 @@ class _AccountScreenState extends State<AccountScreen> {
 
                           const SizedBox(height: 24),
 
-                          // Current Level
+                          // Current Level (Classic / Hard)
                           Text(
                             'Current Level',
                             style: TextStyle(
@@ -270,14 +315,60 @@ class _AccountScreenState extends State<AccountScreen> {
                             ),
                           ),
                           const SizedBox(height: 8),
-                          Text(
-                            '${_userProgress?.currentLevel ?? 1}',
-                            style: TextStyle(
-                              fontFamily: 'Poppins',
-                              color: Colors.white.withOpacity(0.95),
-                              fontSize: 24,
-                              fontWeight: FontWeight.w600,
-                            ),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'Classic',
+                                      style: TextStyle(
+                                        fontFamily: 'Poppins',
+                                        color: Colors.white.withOpacity(0.8),
+                                        fontSize: 14,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 6),
+                                    Text(
+                                      '${_userProgress?.currentLevel ?? 1}',
+                                      style: TextStyle(
+                                        fontFamily: 'Poppins',
+                                        color: Colors.white.withOpacity(0.95),
+                                        fontSize: 20,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(width: 24),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'Hard',
+                                      style: TextStyle(
+                                        fontFamily: 'Poppins',
+                                        color: Colors.white.withOpacity(0.8),
+                                        fontSize: 14,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 6),
+                                    Text(
+                                      '${_hardProgress?.currentLevel ?? 1}',
+                                      style: TextStyle(
+                                        fontFamily: 'Poppins',
+                                        color: Colors.white.withOpacity(0.95),
+                                        fontSize: 20,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
                           ),
 
                           const SizedBox(height: 24),
