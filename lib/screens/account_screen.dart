@@ -279,26 +279,25 @@ class _AccountScreenState extends State<AccountScreen> {
                     ),
                     child: SingleChildScrollView(
                       child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                        crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
                           // Username
-                          Text(
-                            'Username',
-                            style: TextStyle(
-                              fontFamily: 'Poppins',
-                              color: Colors.white.withOpacity(0.8),
-                              fontSize: 18,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
                           Text(
                             _username ?? 'Loading...',
                             style: TextStyle(
                               fontFamily: 'Poppins',
                               color: Colors.white.withOpacity(0.95),
-                              fontSize: 24,
+                              fontSize: 32,
                               fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            'Username',
+                            style: TextStyle(
+                              fontFamily: 'Poppins',
+                              color: Colors.white.withOpacity(0.8),
+                              fontSize: 14,
                             ),
                           ),
 
@@ -307,6 +306,7 @@ class _AccountScreenState extends State<AccountScreen> {
                           // Current Level (Classic / Hard)
                           Text(
                             'Current Level',
+                            textAlign: TextAlign.center,
                             style: TextStyle(
                               fontFamily: 'Poppins',
                               color: Colors.white.withOpacity(0.8),
@@ -319,7 +319,6 @@ class _AccountScreenState extends State<AccountScreen> {
                             children: [
                               Expanded(
                                 child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
                                       'Classic',
@@ -345,7 +344,6 @@ class _AccountScreenState extends State<AccountScreen> {
                               const SizedBox(width: 24),
                               Expanded(
                                 child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
                                       'Hard',
