@@ -78,7 +78,8 @@ class _AchievementsWidgetState extends State<AchievementsWidget> {
 
   Widget _buildClassicAchievements() {
     final bestTimes = widget.userProgress?.bestTimes ?? {};
-    final calculatedAchievements = widget.userProgress?.getCalculatedAchievements() ?? {};
+    final calculatedAchievements =
+        widget.userProgress?.getCalculatedAchievements() ?? {};
     final fastestSolve = widget.userProgress?.getFastestSolve();
     final averageTime = widget.userProgress?.getAverageBestTime() ?? 0.0;
     final completedCount = widget.userProgress?.completedLevels.length ?? 0;
@@ -173,7 +174,8 @@ class _AchievementsWidgetState extends State<AchievementsWidget> {
 
   Widget _buildHardAchievements() {
     final bestTimes = widget.hardUserProgress?.bestTimes ?? {};
-    final calculatedAchievements = widget.hardUserProgress?.getCalculatedAchievements() ?? {};
+    final calculatedAchievements =
+        widget.hardUserProgress?.getCalculatedAchievements() ?? {};
     final fastestSolve = widget.hardUserProgress?.getFastestSolve();
     final averageTime = widget.hardUserProgress?.getAverageBestTime() ?? 0.0;
     final completedCount = widget.hardUserProgress?.completedLevels.length ?? 0;
@@ -181,7 +183,8 @@ class _AchievementsWidgetState extends State<AchievementsWidget> {
     final allAchievements = <Widget>[];
 
     allAchievements.addAll(bestTimes.entries.map((entry) {
-      return _buildPerLevelAchievement(entry.key, entry.value);
+      return _buildPerLevelAchievement(entry.key, entry.value,
+          borderColor: Colors.red);
     }));
 
     if (fastestSolve != null) {
@@ -189,6 +192,7 @@ class _AchievementsWidgetState extends State<AchievementsWidget> {
         'Fastest Solve',
         'Level ${fastestSolve.key}: ${_formatTime(fastestSolve.value)}',
         Icons.flash_on,
+        borderColor: Colors.red,
       ));
     }
 
@@ -197,6 +201,7 @@ class _AchievementsWidgetState extends State<AchievementsWidget> {
         'Levels Completed',
         '$completedCount/17 Levels',
         Icons.check_circle,
+        borderColor: Colors.red,
       ));
     }
 
@@ -205,6 +210,7 @@ class _AchievementsWidgetState extends State<AchievementsWidget> {
         'Average Best Time',
         _formatTime(averageTime.round()),
         Icons.trending_up,
+        borderColor: Colors.red,
       ));
     }
 
@@ -214,6 +220,7 @@ class _AchievementsWidgetState extends State<AchievementsWidget> {
         'Persistent',
         '$count levels under 3 minutes',
         Icons.speed,
+        borderColor: Colors.red,
       ));
     }
 
@@ -223,6 +230,7 @@ class _AchievementsWidgetState extends State<AchievementsWidget> {
         'Determined',
         '$count levels under 2 minutes',
         Icons.bolt,
+        borderColor: Colors.red,
       ));
     }
 
@@ -232,17 +240,18 @@ class _AchievementsWidgetState extends State<AchievementsWidget> {
         'Hardcore',
         '$count levels under 1 minute',
         Icons.whatshot,
+        borderColor: Colors.red,
       ));
     }
-    
+
     if (allAchievements.isEmpty) {
-      return _buildNoAchievements();
+      return _buildNoAchievements(borderColor: Colors.red);
     }
 
     return Column(children: allAchievements);
   }
 
-  Widget _buildPerLevelAchievement(int level, int time) {
+  Widget _buildPerLevelAchievement(int level, int time, {Color? borderColor}) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
@@ -256,7 +265,8 @@ class _AchievementsWidgetState extends State<AchievementsWidget> {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        border: Border.all(color: Colors.white.withOpacity(0.6), width: 1),
+        border: Border.all(
+            color: borderColor ?? Colors.white.withOpacity(0.6), width: 1),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.25),
@@ -341,7 +351,8 @@ class _AchievementsWidgetState extends State<AchievementsWidget> {
     );
   }
 
-  Widget _buildGlobalAchievement(String title, String subtitle, IconData icon) {
+  Widget _buildGlobalAchievement(String title, String subtitle, IconData icon,
+      {Color? borderColor}) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
@@ -355,7 +366,8 @@ class _AchievementsWidgetState extends State<AchievementsWidget> {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        border: Border.all(color: Colors.white.withOpacity(0.6), width: 1),
+        border: Border.all(
+            color: borderColor ?? Colors.white.withOpacity(0.6), width: 1),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.25),
@@ -408,8 +420,8 @@ class _AchievementsWidgetState extends State<AchievementsWidget> {
       ),
     );
   }
-  
-  Widget _buildNoAchievements() {
+
+  Widget _buildNoAchievements({Color? borderColor}) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -422,7 +434,8 @@ class _AchievementsWidgetState extends State<AchievementsWidget> {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        border: Border.all(color: Colors.white.withOpacity(0.6), width: 2),
+        border: Border.all(
+            color: borderColor ?? Colors.white.withOpacity(0.6), width: 2),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.35),
