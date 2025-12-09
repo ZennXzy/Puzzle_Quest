@@ -7,8 +7,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import '../widgets/puzzle_widget_4x4.dart';
 import '../widgets/puzzle_preview_widget.dart';
 import '../widgets/level_completion_overlay.dart';
-import '../models/user_progress.dart';
-import '../services/progress_service.dart';
+import '../models/hard_user_progress.dart';
+import '../services/hard_progress_service.dart';
 
 class HardScreen extends StatefulWidget {
   const HardScreen({super.key});
@@ -18,7 +18,7 @@ class HardScreen extends StatefulWidget {
 }
 
 class _HardScreenState extends State<HardScreen> {
-  UserProgress? _userProgress;
+  HardUserProgress? _userProgress;
   String? _currentUser;
   int currentLevel = 1;
   int timeElapsed = 0; // Starting time in seconds
@@ -43,44 +43,70 @@ class _HardScreenState extends State<HardScreen> {
   }
 
   Future<void> _loadUserProgress() async {
+    print('[HardScreen] === LOAD USER PROGRESS START ===');
     final prefs = await SharedPreferences.getInstance();
     final currentUser = prefs.getString('current_user');
     final auth = FirebaseAuth.instance;
     final user = auth.currentUser;
 
+    print('[HardScreen] Current user from SharedPrefs: $currentUser');
+    print('[HardScreen] Firebase Auth user: ${user?.uid}');
+
     if (currentUser != null) {
       _currentUser = currentUser;
+      print('[HardScreen] Set _currentUser to: $_currentUser');
 
       // First try to load from Firebase
       try {
-        final progressService = ProgressService();
+        print('[HardScreen] Attempting to load from Firebase...');
+        final progressService = HardProgressService();
         final userProgress = await progressService.loadProgress();
         if (userProgress != null) {
+          print('[HardScreen] Loaded hard mode progress from Firebase');
+          print('[HardScreen] Firebase progress - Level: ${userProgress.currentLevel}, Completed: ${userProgress.completedImageIds.length}');
           setState(() {
             _userProgress = userProgress;
             currentLevel = userProgress.currentLevel;
             _isLoadingProgress = false;
           });
+          print('[HardScreen] === LOAD USER PROGRESS END (from Firebase) ===');
           return;
+        } else {
+          print('[HardScreen] No progress found in Firebase');
         }
       } catch (e) {
-        print('Error loading from Firebase: $e');
+        print('[HardScreen] Error loading from Firebase: $e');
+        print('[HardScreen] Stack trace: ${StackTrace.current}');
       }
 
-      // Fallback to local storage
-      final localKey = user != null ? 'user_progress_${user.uid}' : 'user_progress_$currentUser';
+        // Fallback to local storage using the same key pattern as save
+        final localKey = user != null
+          ? 'hard_user_progress_${user.uid}'
+          : 'hard_user_progress_$currentUser';
       final progressJson = prefs.getString(localKey);
+      print('[HardScreen] Trying to load from local storage with key: $localKey');
+      print('[HardScreen] Local storage value exists: ${progressJson != null}');
+      
       if (progressJson != null) {
-        final progressData = jsonDecode(progressJson) as Map<String, dynamic>;
-        final userProgress = UserProgress.fromJson(progressData);
-        setState(() {
-          _userProgress = userProgress;
-          currentLevel = userProgress.currentLevel;
-          _isLoadingProgress = false;
-        });
+        try {
+          print('[HardScreen] Loaded hard mode progress from local storage');
+          final progressData = jsonDecode(progressJson) as Map<String, dynamic>;
+          final userProgress = HardUserProgress.fromJson(progressData);
+          print('[HardScreen] Local progress - Level: ${userProgress.currentLevel}, Completed: ${userProgress.completedImageIds.length}');
+          setState(() {
+            _userProgress = userProgress;
+            currentLevel = userProgress.currentLevel;
+            _isLoadingProgress = false;
+          });
+          print('[HardScreen] === LOAD USER PROGRESS END (from local) ===');
+        } catch (e) {
+          print('[HardScreen] ERROR parsing local storage data: $e');
+          // Fall through to default initialization
+        }
       } else {
         // Initialize with default progress
-        final defaultProgress = UserProgress(
+        print('[HardScreen] Initializing default hard mode progress');
+        final defaultProgress = HardUserProgress(
           email: currentUser,
           currentLevel: 1,
           completedImageIds: [],
@@ -91,11 +117,14 @@ class _HardScreenState extends State<HardScreen> {
           currentLevel = 1;
           _isLoadingProgress = false;
         });
+        print('[HardScreen] === LOAD USER PROGRESS END (default) ===');
       }
     } else {
+      print('[HardScreen] No currentUser in SharedPreferences');
       setState(() {
         _isLoadingProgress = false;
       });
+      print('[HardScreen] === LOAD USER PROGRESS END (no user) ===');
     }
   }
 
@@ -177,11 +206,11 @@ class _HardScreenState extends State<HardScreen> {
   Future<void> _saveProgress() async {
     // If user progress is not loaded yet, wait for it
     if (_userProgress == null || _currentUser == null) {
-      print('Waiting for user progress to load...');
+      print('[HardScreen] Waiting for user progress to load...');
       await Future.delayed(const Duration(milliseconds: 500));
       if (_userProgress == null || _currentUser == null) {
-        print('User progress still not loaded, using default');
-        _userProgress = UserProgress(
+        print('[HardScreen] User progress still not loaded, using default');
+        _userProgress = HardUserProgress(
           email: _currentUser ?? 'guest',
           currentLevel: 1,
           completedImageIds: [],
@@ -195,7 +224,8 @@ class _HardScreenState extends State<HardScreen> {
     // Update user progress with calculated achievements
     final updatedProgress = _userProgress!.copyWith(
       currentLevel: currentLevel + 1,
-      completedImageIds: List.from(_userProgress!.completedImageIds)..add(_getImagePath()),
+      completedImageIds: List.from(_userProgress!.completedImageIds)
+        ..add(_getImagePath()),
       bestTimes: Map.from(_userProgress!.bestTimes)
         ..[currentLevel] = (_userProgress!.bestTimes[currentLevel] ?? 0) == 0
             ? timeElapsed
@@ -205,18 +235,47 @@ class _HardScreenState extends State<HardScreen> {
       achievements: _userProgress!.getCalculatedAchievements(),
     );
 
+    print('[HardScreen] === SAVE PROGRESS START ===');
+    print('[HardScreen] Updated progress - Level: ${updatedProgress.currentLevel}, CompletedCount: ${updatedProgress.completedImageIds.length}');
+    print('[HardScreen] Current user: $_currentUser');
+
     // Save to Firebase
     try {
-      final progressService = ProgressService();
+      print('[HardScreen] Attempting Firebase save with user: $_currentUser');
+      final progressService = HardProgressService();
       await progressService.saveProgress(updatedProgress);
+      print('[HardScreen] Successfully saved to Firebase');
     } catch (e) {
-      print('Error saving to Firebase: $e');
+      print('[HardScreen] ERROR saving to Firebase: $e');
+      print('[HardScreen] Stack trace: ${StackTrace.current}');
     }
 
-    // Save to local storage
-    final prefs = await SharedPreferences.getInstance();
-    final currentUser = prefs.getString('current_user') ?? _currentUser ?? '';
-    await prefs.setString('user_progress_$currentUser', jsonEncode(updatedProgress.toJson()));
+    // Save to local storage — use the same key logic as load (prefer auth uid)
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final prefsCurrentUser = prefs.getString('current_user') ?? _currentUser ?? '';
+      final auth = FirebaseAuth.instance;
+      final authUser = auth.currentUser;
+      final localKey = authUser != null
+          ? 'hard_user_progress_${authUser.uid}'
+          : 'hard_user_progress_$prefsCurrentUser';
+
+      print('[HardScreen] Saving to local storage with key: $localKey');
+      await prefs.setString(localKey, jsonEncode(updatedProgress.toJson()));
+
+      // Also ensure the prefs-based key exists (mirrors classic behavior)
+      final prefsKey = 'hard_user_progress_$prefsCurrentUser';
+      if (prefsKey != localKey) {
+        await prefs.setString(prefsKey, jsonEncode(updatedProgress.toJson()));
+        print('[HardScreen] Also wrote local backup key: $prefsKey');
+      }
+
+      print('[HardScreen] Successfully saved to local storage');
+    } catch (e) {
+      print('[HardScreen] ERROR saving to local storage: $e');
+    }
+
+    print('[HardScreen] === SAVE PROGRESS END ===');
 
     setState(() {
       _userProgress = updatedProgress;
@@ -536,6 +595,7 @@ class _HardScreenState extends State<HardScreen> {
                     child: Container(
                       margin: const EdgeInsets.symmetric(horizontal: 24),
                       child: PuzzleWidget4x4(
+                        key: puzzleKey,
                         imagePath: _getImagePath(),
                         onPuzzleComplete: _onPuzzleComplete,
                       ),

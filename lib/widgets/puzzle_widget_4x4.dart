@@ -141,21 +141,119 @@ class _PuzzleWidget4x4State extends State<PuzzleWidget4x4> {
     final emptyIndex = pieces.indexWhere((piece) => piece.isEmpty);
     final tappedPiece = pieces[pieceIndex];
 
-    // Swap positions
+    // Swap positions: move the tapped piece to empty slot, empty slot takes tapped piece's position
     pieces[emptyIndex] = tappedPiece.copyWith(currentPosition: emptyIndex);
     pieces[pieceIndex] = PuzzlePiece(
-      id: -1,
-      correctPosition: pieces.length - 1,
+      id: 15,
+      correctPosition: 15,
       currentPosition: pieceIndex,
       imagePath: '',
       isEmpty: true,
     );
   }
 
+  void _onPieceSwipe(int index, DragEndDetails details) {
+    final emptyIndex = pieces.indexWhere((piece) => piece.isEmpty);
+
+    // Check if the swipe direction is towards the empty space AND the piece is adjacent to the empty slot
+    if (_isSwipeTowardsEmpty(index, emptyIndex, details) && _isAdjacentToEmpty(index, emptyIndex)) {
+      // Play slide sound effect
+      _playSlideSound();
+
+      setState(() {
+        // Perform the move
+        _performMove(index);
+
+        // Check if puzzle is complete
+        if (_isPuzzleComplete()) {
+          widget.onPuzzleComplete(true);
+        }
+      });
+    }
+  }
+
+  bool _isSwipeTowardsEmpty(int pieceIndex, int emptyIndex, DragEndDetails details) {
+    final pieceRow = pieceIndex ~/ 4;
+    final pieceCol = pieceIndex % 4;
+    final emptyRow = emptyIndex ~/ 4;
+    final emptyCol = emptyIndex % 4;
+
+    // Determine swipe direction based on velocity
+    final dx = details.velocity.pixelsPerSecond.dx;
+    final dy = details.velocity.pixelsPerSecond.dy;
+
+    // Horizontal swipe
+    if (dx.abs() > dy.abs()) {
+      if (dx > 0 && emptyCol > pieceCol && emptyRow == pieceRow) {
+        // Swipe right towards empty space
+        return true;
+      } else if (dx < 0 && emptyCol < pieceCol && emptyRow == pieceRow) {
+        // Swipe left towards empty space
+        return true;
+      }
+    }
+    // Vertical swipe
+    else {
+      if (dy > 0 && emptyRow > pieceRow && emptyCol == pieceCol) {
+        // Swipe down towards empty space
+        return true;
+      } else if (dy < 0 && emptyRow < pieceRow && emptyCol == pieceCol) {
+        // Swipe up towards empty space
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  bool _isAdjacentToEmpty(int pieceIndex, int emptyIndex) {
+    final pieceRow = pieceIndex ~/ 4;
+    final pieceCol = pieceIndex % 4;
+    final emptyRow = emptyIndex ~/ 4;
+    final emptyCol = emptyIndex % 4;
+
+    // Check if the piece is directly adjacent to the empty slot (up, down, left, right)
+    final rowDiff = (pieceRow - emptyRow).abs();
+    final colDiff = (pieceCol - emptyCol).abs();
+
+    // Adjacent if exactly one row or one column difference, but not both
+    return (rowDiff == 1 && colDiff == 0) || (rowDiff == 0 && colDiff == 1);
+  }
+
   void _playSlideSound() {
     final random = Random();
     final randomSound = _slideSounds[random.nextInt(_slideSounds.length)];
     _audioPlayer.play(AssetSource(randomSound));
+  }
+
+  void _testPuzzleComplete() {
+    // Set up puzzle with all pieces in their correct positions
+    // This makes the puzzle immediately complete
+    pieces.clear();
+    
+    // Create all 15 playable pieces (0-14) in their correct positions
+    for (int i = 0; i < 15; i++) {
+      pieces.add(PuzzlePiece(
+        id: i,
+        correctPosition: i,
+        currentPosition: i,
+        imagePath: widget.imagePath,
+      ));
+    }
+    
+    // Add empty piece at position 15 (correct position)
+    pieces.add(PuzzlePiece(
+      id: 15,
+      correctPosition: 15,
+      currentPosition: 15,
+      imagePath: '',
+      isEmpty: true,
+    ));
+    
+    // Trigger puzzle complete
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      widget.onPuzzleComplete(true);
+    });
   }
 
   bool _isPuzzleComplete() {
@@ -214,80 +312,113 @@ class _PuzzleWidget4x4State extends State<PuzzleWidget4x4> {
         ],
       ),
       padding: const EdgeInsets.all(16),
-      child: AspectRatio(
-        aspectRatio: 1.0,
-        child: Container(
-          decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.05),
-            borderRadius: BorderRadius.circular(12),
-          ),
-          padding: const EdgeInsets.all(8),
-          child: GridView.builder(
-            physics: const NeverScrollableScrollPhysics(),
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 4,
-              crossAxisSpacing: 3,
-              mainAxisSpacing: 3,
-            ),
-            itemCount: 16,
-            itemBuilder: (context, index) {
-              // Check if this is the empty slot position
-              if (index >= pieces.length || (index < pieces.length && pieces[index].isEmpty)) {
-                return Container(
-                  decoration: BoxDecoration(
-                    color: Colors.grey[400]?.withOpacity(0.3),
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(
-                      color: Colors.white.withOpacity(0.2),
-                      width: 1,
-                    ),
-                  ),
-                  child: const Center(
-                    child: Icon(
-                      Icons.crop_square,
-                      color: Colors.white54,
-                      size: 20,
-                    ),
-                  ),
-                );
-              }
-
-              final piece = pieces[index];
-
-              return GestureDetector(
-                onTap: () => _playSlideSound(),
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 150),
-                  curve: Curves.easeInOut,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(
-                      color: Colors.white.withOpacity(0.4),
-                      width: 1.5,
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.1),
-                        blurRadius: 4,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
-                  ),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(6),
-                    child: CustomPaint(
-                      painter: PuzzlePiecePainter4x4(
-                        fullImage: fullImage!,
-                        pieceId: piece.id,
-                        gridSize: 4,
-                      ),
-                    ),
-                  ),
+      child: Column(
+        children: [
+          Expanded(
+            child: AspectRatio(
+              aspectRatio: 1.0,
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.05),
+                  borderRadius: BorderRadius.circular(12),
                 ),
-              );
-            },
+                padding: const EdgeInsets.all(8),
+                child: GridView.builder(
+                  physics: const NeverScrollableScrollPhysics(),
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 4,
+                    crossAxisSpacing: 3,
+                    mainAxisSpacing: 3,
+                  ),
+                  itemCount: 16,
+                  itemBuilder: (context, index) {
+                    // Check if this is the empty slot position
+                    if (index >= pieces.length || (index < pieces.length && pieces[index].isEmpty)) {
+                      return Container(
+                        decoration: BoxDecoration(
+                          color: Colors.grey[400]?.withOpacity(0.3),
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(
+                            color: Colors.white.withOpacity(0.2),
+                            width: 1,
+                          ),
+                        ),
+                        child: const Center(
+                          child: Icon(
+                            Icons.crop_square,
+                            color: Colors.white54,
+                            size: 20,
+                          ),
+                        ),
+                      );
+                    }
+
+                    final piece = pieces[index];
+
+                    return GestureDetector(
+                      onPanEnd: (details) => _onPieceSwipe(index, details),
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 150),
+                        curve: Curves.easeInOut,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(
+                            color: Colors.white.withOpacity(0.4),
+                            width: 1.5,
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.1),
+                              blurRadius: 4,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(6),
+                          child: CustomPaint(
+                            painter: PuzzlePiecePainter4x4(
+                              fullImage: fullImage!,
+                              pieceId: piece.id,
+                              gridSize: 4,
+                            ),
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ),
           ),
-        ),
+          const SizedBox(height: 12),
+          // Test button
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.orange.shade700,
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+              onPressed: () {
+                setState(() {
+                  _testPuzzleComplete();
+                });
+              },
+              child: const Text(
+                'TEST: Almost Complete',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

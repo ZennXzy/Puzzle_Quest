@@ -6,8 +6,13 @@ service cloud.firestore {
       allow read, write: if request.auth != null && request.auth.uid == userId;
     }
 
-    // Allow users to read and write their own progress document
+    // Allow users to read and write their own progress document (classic mode)
     match /user_progress/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // Allow users to read and write their own hard mode progress document
+    match /hard_user_progress/{userId} {
       allow read, write: if request.auth != null && request.auth.uid == userId;
     }
   }
