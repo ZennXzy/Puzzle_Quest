@@ -5,23 +5,21 @@ import 'dart:math';
 import 'package:audioplayers/audioplayers.dart';
 import '../models/puzzle_piece.dart';
 
-class PuzzleWidget extends StatefulWidget {
+class PuzzleWidget4x4 extends StatefulWidget {
   final String imagePath;
-  final int gridSize;
   final Function(bool) onPuzzleComplete;
 
-  const PuzzleWidget({
+  const PuzzleWidget4x4({
     super.key,
     required this.imagePath,
-    this.gridSize = 3,
     required this.onPuzzleComplete,
   });
 
   @override
-  State<PuzzleWidget> createState() => _PuzzleWidgetState();
+  State<PuzzleWidget4x4> createState() => _PuzzleWidget4x4State();
 }
 
-class _PuzzleWidgetState extends State<PuzzleWidget> {
+class _PuzzleWidget4x4State extends State<PuzzleWidget4x4> {
   List<PuzzlePiece> pieces = [];
   ui.Image? fullImage;
   bool isLoading = true;
@@ -73,32 +71,27 @@ class _PuzzleWidgetState extends State<PuzzleWidget> {
 
     pieces.clear();
 
-    // Create 3x3 puzzle pieces from a 4x4 dimension photo
-    // We'll use pieces from positions: 0,1,2,4,5,6,8,9 (skipping 3,7,10,11,12,13,14,15)
-    final selectedPieceIds = [0, 1, 2, 4, 5, 6, 8, 9];
-
-    // Create pieces in correct order first
-    for (int i = 0; i < selectedPieceIds.length; i++) {
-      final pieceId = selectedPieceIds[i];
+    // Create 15 playable pieces (IDs 0-14)
+    for (int i = 0; i < 15; i++) {
       pieces.add(PuzzlePiece(
-        id: pieceId,
+        id: i,
         correctPosition: i,
         currentPosition: i,
         imagePath: widget.imagePath,
       ));
     }
 
-    // Add empty piece at the last position - this stays fixed
+    // Add empty piece at position 15 (bottom-right) - stays fixed
     pieces.add(PuzzlePiece(
-      id: -1,
-      correctPosition: pieces.length - 1,
-      currentPosition: pieces.length - 1,
+      id: 15,
+      correctPosition: 15,
+      currentPosition: 15,
       imagePath: '',
       isEmpty: true,
     ));
 
     // Shuffle only the playable pieces (not the empty slot)
-    // Keep empty slot fixed at bottom-right (position 8)
+    // Keep empty slot fixed at bottom-right (position 15)
     final random = Random();
     final playablePieces = pieces.sublist(0, pieces.length - 1);
     
@@ -120,8 +113,8 @@ class _PuzzleWidgetState extends State<PuzzleWidget> {
 
   List<int> _getPossibleMoves(int emptyIndex) {
     final possibleMoves = <int>[];
-    final emptyRow = emptyIndex ~/ 3;
-    final emptyCol = emptyIndex % 3;
+    final emptyRow = emptyIndex ~/ 4;
+    final emptyCol = emptyIndex % 4;
 
     // Check all four directions
     final directions = [
@@ -135,8 +128,8 @@ class _PuzzleWidgetState extends State<PuzzleWidget> {
       final newRow = emptyRow + direction[0];
       final newCol = emptyCol + direction[1];
 
-      if (newRow >= 0 && newRow < 3 && newCol >= 0 && newCol < 3) {
-        final newIndex = newRow * 3 + newCol;
+      if (newRow >= 0 && newRow < 4 && newCol >= 0 && newCol < 4) {
+        final newIndex = newRow * 4 + newCol;
         possibleMoves.add(newIndex);
       }
     }
@@ -159,81 +152,11 @@ class _PuzzleWidgetState extends State<PuzzleWidget> {
     );
   }
 
-  void _onPieceSwipe(int index, DragEndDetails details) {
-    final emptyIndex = pieces.indexWhere((piece) => piece.isEmpty);
-
-    // Check if the swipe direction is towards the empty space AND the piece is adjacent to the empty slot
-    if (_isSwipeTowardsEmpty(index, emptyIndex, details) && _isAdjacentToEmpty(index, emptyIndex)) {
-      // Play slide sound effect
-      _playSlideSound();
-
-      setState(() {
-        // Perform the move
-        _performMove(index);
-
-        // Check if puzzle is complete
-        if (_isPuzzleComplete()) {
-          widget.onPuzzleComplete(true);
-        }
-      });
-    }
-  }
-
   void _playSlideSound() {
     final random = Random();
     final randomSound = _slideSounds[random.nextInt(_slideSounds.length)];
     _audioPlayer.play(AssetSource(randomSound));
   }
-
-  bool _isSwipeTowardsEmpty(int pieceIndex, int emptyIndex, DragEndDetails details) {
-    final pieceRow = pieceIndex ~/ 3;
-    final pieceCol = pieceIndex % 3;
-    final emptyRow = emptyIndex ~/ 3;
-    final emptyCol = emptyIndex % 3;
-
-    // Determine swipe direction based on velocity
-    final dx = details.velocity.pixelsPerSecond.dx;
-    final dy = details.velocity.pixelsPerSecond.dy;
-
-    // Horizontal swipe
-    if (dx.abs() > dy.abs()) {
-      if (dx > 0 && emptyCol > pieceCol && emptyRow == pieceRow) {
-        // Swipe right towards empty space
-        return true;
-      } else if (dx < 0 && emptyCol < pieceCol && emptyRow == pieceRow) {
-        // Swipe left towards empty space
-        return true;
-      }
-    }
-    // Vertical swipe
-    else {
-      if (dy > 0 && emptyRow > pieceRow && emptyCol == pieceCol) {
-        // Swipe down towards empty space
-        return true;
-      } else if (dy < 0 && emptyRow < pieceRow && emptyCol == pieceCol) {
-        // Swipe up towards empty space
-        return true;
-      }
-    }
-
-    return false;
-  }
-
-  bool _isAdjacentToEmpty(int pieceIndex, int emptyIndex) {
-    final pieceRow = pieceIndex ~/ 3;
-    final pieceCol = pieceIndex % 3;
-    final emptyRow = emptyIndex ~/ 3;
-    final emptyCol = emptyIndex % 3;
-
-    // Check if the piece is directly adjacent to the empty slot (up, down, left, right)
-    final rowDiff = (pieceRow - emptyRow).abs();
-    final colDiff = (pieceCol - emptyCol).abs();
-
-    // Adjacent if exactly one row or one column difference, but not both
-    return (rowDiff == 1 && colDiff == 0) || (rowDiff == 0 && colDiff == 1);
-  }
-
-
 
   bool _isPuzzleComplete() {
     for (final piece in pieces) {
@@ -300,17 +223,16 @@ class _PuzzleWidgetState extends State<PuzzleWidget> {
           ),
           padding: const EdgeInsets.all(8),
           child: GridView.builder(
-            physics: NeverScrollableScrollPhysics(),
-            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: widget.gridSize,
+            physics: const NeverScrollableScrollPhysics(),
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 4,
               crossAxisSpacing: 3,
               mainAxisSpacing: 3,
             ),
-            itemCount: pieces.length,
+            itemCount: 16,
             itemBuilder: (context, index) {
-              final piece = pieces[index];
-
-              if (piece.isEmpty) {
+              // Check if this is the empty slot position
+              if (index >= pieces.length || (index < pieces.length && pieces[index].isEmpty)) {
                 return Container(
                   decoration: BoxDecoration(
                     color: Colors.grey[400]?.withOpacity(0.3),
@@ -324,14 +246,16 @@ class _PuzzleWidgetState extends State<PuzzleWidget> {
                     child: Icon(
                       Icons.crop_square,
                       color: Colors.white54,
-                      size: 24,
+                      size: 20,
                     ),
                   ),
                 );
               }
 
+              final piece = pieces[index];
+
               return GestureDetector(
-                onPanEnd: (details) => _onPieceSwipe(index, details),
+                onTap: () => _playSlideSound(),
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 150),
                   curve: Curves.easeInOut,
@@ -352,10 +276,10 @@ class _PuzzleWidgetState extends State<PuzzleWidget> {
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(6),
                     child: CustomPaint(
-                      painter: PuzzlePiecePainter(
+                      painter: PuzzlePiecePainter4x4(
                         fullImage: fullImage!,
                         pieceId: piece.id,
-                        gridSize: 4, // Original 4x4 grid
+                        gridSize: 4,
                       ),
                     ),
                   ),
@@ -369,12 +293,12 @@ class _PuzzleWidgetState extends State<PuzzleWidget> {
   }
 }
 
-class PuzzlePiecePainter extends CustomPainter {
+class PuzzlePiecePainter4x4 extends CustomPainter {
   final ui.Image fullImage;
   final int pieceId;
   final int gridSize;
 
-  PuzzlePiecePainter({
+  PuzzlePiecePainter4x4({
     required this.fullImage,
     required this.pieceId,
     required this.gridSize,
@@ -382,6 +306,9 @@ class PuzzlePiecePainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
+    // Don't render image for empty slot or invalid pieces
+    if (pieceId < 0 || pieceId >= gridSize * gridSize) return;
+
     final pieceWidth = fullImage.width / gridSize;
     final pieceHeight = fullImage.height / gridSize;
 

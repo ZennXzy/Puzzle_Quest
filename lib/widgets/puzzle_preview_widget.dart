@@ -107,10 +107,13 @@ class _PuzzlePreviewWidgetState extends State<PuzzlePreviewWidget> {
           crossAxisSpacing: 2,
           mainAxisSpacing: 2,
         ),
-        itemCount: 9, // 3x3 grid
+        itemCount: widget.gridSize == 3 ? 9 : 16, // 3x3 = 9, 4x4 = 16
         itemBuilder: (context, index) {
-          if (index == 8) {
-            // Empty space at the last position
+          final totalPieces = widget.gridSize == 3 ? 9 : 16;
+          final lastPosition = totalPieces - 1;
+          
+          if (index == lastPosition) {
+            // Empty space at the last position (bottom-right)
             return Container(
               decoration: BoxDecoration(
                 color: Colors.grey[400]?.withOpacity(0.3),
@@ -130,9 +133,16 @@ class _PuzzlePreviewWidgetState extends State<PuzzlePreviewWidget> {
             );
           }
 
-          // Map 3x3 index to 4x4 piece IDs: [0,1,2,4,5,6,8,9]
-          final pieceIds = [0, 1, 2, 4, 5, 6, 8, 9];
-          final pieceId = pieceIds[index];
+          // Map piece IDs based on grid size
+          int pieceId;
+          if (widget.gridSize == 3) {
+            // 3x3: use selected pieces [0,1,2,4,5,6,8,9]
+            final pieceIds = [0, 1, 2, 4, 5, 6, 8, 9];
+            pieceId = pieceIds[index];
+          } else {
+            // 4x4: use all pieces 0-14
+            pieceId = index;
+          }
 
           return Container(
             decoration: BoxDecoration(
@@ -155,7 +165,7 @@ class _PuzzlePreviewWidgetState extends State<PuzzlePreviewWidget> {
                 painter: PuzzlePiecePainter(
                   fullImage: fullImage!,
                   pieceId: pieceId,
-                  gridSize: 4, // Original 4x4 grid
+                  gridSize: widget.gridSize == 3 ? 4 : 4, // Always 4x4 source grid
                 ),
               ),
             ),

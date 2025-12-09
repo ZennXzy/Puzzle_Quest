@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import 'package:firebase_auth/firebase_auth.dart';
-import '../widgets/puzzle_widget.dart';
+import '../widgets/puzzle_widget_4x4.dart';
 import '../widgets/puzzle_preview_widget.dart';
 import '../widgets/level_completion_overlay.dart';
 import '../models/user_progress.dart';
@@ -535,8 +535,7 @@ class _HardScreenState extends State<HardScreen> {
                   Expanded(
                     child: Container(
                       margin: const EdgeInsets.symmetric(horizontal: 24),
-                      child: PuzzleWidget(
-                        key: puzzleKey,
+                      child: PuzzleWidget4x4(
                         imagePath: _getImagePath(),
                         onPuzzleComplete: _onPuzzleComplete,
                       ),
