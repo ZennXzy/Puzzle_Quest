@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'account_screen.dart';
+import 'hard_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -120,7 +121,10 @@ class _HomeScreenState extends State<HomeScreen>
                           filled: true,
                           difficulty: 'hard',
                           onTap: () {
-                            Navigator.pushNamed(context, '/play_hard');
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (_) => const HardScreen()),
+                            );
                           },
                         ),
 
