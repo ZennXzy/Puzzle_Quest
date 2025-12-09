@@ -391,33 +391,6 @@ class _PuzzleWidget4x4State extends State<PuzzleWidget4x4> {
               ),
             ),
           ),
-          const SizedBox(height: 12),
-          // Test button
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.orange.shade700,
-                padding: const EdgeInsets.symmetric(vertical: 8),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-              ),
-              onPressed: () {
-                setState(() {
-                  _testPuzzleComplete();
-                });
-              },
-              child: const Text(
-                'TEST: Almost Complete',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-          ),
         ],
       ),
     );
