@@ -112,6 +112,20 @@ class _HomeScreenState extends State<HomeScreen>
 
                         const SizedBox(height: 24),
 
+                        // Hard (outlined) - added under Play
+                        _MenuButton(
+                          width: buttonWidth * 0.84,
+                          height: 64,
+                          label: 'Hard',
+                          filled: true,
+                          difficulty: 'hard',
+                          onTap: () {
+                            Navigator.pushNamed(context, '/play_hard');
+                          },
+                        ),
+
+                        const SizedBox(height: 24),
+
                         // Account (outlined)
                         _MenuButton(
                           width: buttonWidth * 0.84,
@@ -204,6 +218,7 @@ class _MenuButton extends StatelessWidget {
   final double height;
   final String label;
   final bool filled;
+  final String? difficulty;
   final VoidCallback onTap;
 
   const _MenuButton({
@@ -212,11 +227,24 @@ class _MenuButton extends StatelessWidget {
     required this.label,
     required this.filled,
     required this.onTap,
+    this.difficulty,
   });
 
   @override
   Widget build(BuildContext context) {
     final border = Border.all(color: Colors.white.withOpacity(0.9), width: 2.4);
+    final boxShadows = <BoxShadow>[
+      BoxShadow(
+        color: Colors.black.withOpacity(0.28),
+        blurRadius: 12,
+        offset: const Offset(6, 8),
+      ),
+      BoxShadow(
+        color: Colors.white.withOpacity(0.14),
+        blurRadius: 6,
+        offset: const Offset(-2, -2),
+      ),
+    ];
 
     return Material(
       color: Colors.transparent,
@@ -229,21 +257,8 @@ class _MenuButton extends StatelessWidget {
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(16),
             border: border,
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.28),
-                blurRadius: 12,
-                offset: const Offset(6, 8),
-              ),
-              BoxShadow(
-                color: Colors.white.withOpacity(0.14),
-                blurRadius: 6,
-                offset: const Offset(-2, -2),
-              ),
-            ],
-            gradient: filled
-                ? LinearGradient(colors: [Colors.purple.shade300.withOpacity(0.95), Colors.purple.shade200.withOpacity(0.8)])
-                : null,
+            boxShadow: boxShadows,
+            gradient: _getGradient(),
           ),
           child: Center(
             child: Text(
@@ -260,6 +275,27 @@ class _MenuButton extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  LinearGradient? _getGradient() {
+    if (difficulty == 'hard') {
+      return LinearGradient(
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+        colors: [
+          Colors.red.shade900.withOpacity(0.95),
+          Colors.red.shade700.withOpacity(0.9),
+          Colors.red.shade600.withOpacity(0.85),
+        ],
+        stops: const [0.0, 0.5, 1.0],
+      );
+    }
+    if (filled) {
+      return LinearGradient(
+        colors: [Colors.purple.shade300.withOpacity(0.95), Colors.purple.shade200.withOpacity(0.8)],
+      );
+    }
+    return null;
   }
 }
 
